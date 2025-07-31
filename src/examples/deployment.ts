@@ -54,6 +54,21 @@ async function deployAndUseBlog() {
       wallet: wallet
     });
 
+    // Get initial blog info
+    console.log('\n=== Getting Blog Info ===');
+    const infoResponse = await blogSDK.getInfo();
+    
+    if (infoResponse.success) {
+      const info = infoResponse.data;
+      console.log('✅ Blog info retrieved:');
+      console.log(`   Name: ${info.name}`);
+      console.log(`   Author: ${info.author}`);
+      console.log(`   Title: ${info.blogTitle}`);
+      console.log(`   Description: ${info.blogDescription}`);
+    } else {
+      console.log('⚠️  Failed to get blog info:', infoResponse.data);
+    }
+
     // Set up the blog details
     console.log('\n=== Setting Blog Details ===');
     const blogDetailsResponse = await blogSDK.setBlogDetails({

@@ -74,6 +74,45 @@ describe('InkwellBlogSDK', () => {
   });
 
   describe('Public Methods', () => {
+    it('should get blog info', async () => {
+      const mockResponse = {
+        Messages: [{
+          Tags: {
+            Name: 'Test Blog',
+            Author: '@test',
+            'Blog-Title': 'Test Blog Title',
+            'Blog-Description': 'Test Blog Description',
+            'Blog-Logo': 'https://example.com/logo.png'
+          },
+          Data: JSON.stringify({
+            success: true,
+            data: {
+              title: 'Test Blog Title',
+              description: 'Test Blog Description',
+              logo: 'https://example.com/logo.png'
+            }
+          })
+        }]
+      };
+
+      mockAoconnect.dryRun.mockResolvedValue(mockResponse);
+
+      const result = await blogSDK.getInfo();
+
+      expect(result.success).toBe(true);
+      expect(result.data.name).toBe('Test Blog');
+      expect(result.data.author).toBe('@test');
+      expect(result.data.blogTitle).toBe('Test Blog Title');
+      expect(result.data.blogDescription).toBe('Test Blog Description');
+      expect(result.data.blogLogo).toBe('https://example.com/logo.png');
+      expect(mockAoconnect.dryRun).toHaveBeenCalledWith({
+        process: 'test-process-id',
+        tags: [
+          { name: 'Action', value: 'Info' }
+        ]
+      });
+    });
+
     it('should get all posts', async () => {
       const mockResponse = {
         Messages: [{

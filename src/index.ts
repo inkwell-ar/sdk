@@ -7,6 +7,7 @@ export type {
   ApiResponse,
   BlogPost,
   BlogDetails,
+  BlogInfo,
   CreatePostData,
   UpdatePostData,
   UpdateBlogDetailsData,

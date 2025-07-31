@@ -17,6 +17,15 @@ export interface BlogDetails {
   logo: string;
 }
 
+export interface BlogInfo {
+  name: string;
+  author: string;
+  blogTitle: string;
+  blogDescription: string;
+  blogLogo: string;
+  details: BlogDetails;
+}
+
 export interface UpdateBlogDetailsData {
   title?: string;
   description?: string;
@@ -119,6 +128,7 @@ export interface DeployOptions {
 
 export interface BlogSDK {
   // Public methods
+  getInfo(): Promise<ApiResponse<BlogInfo>>;
   getAllPosts(options?: GetPostsOptions): Promise<ApiResponse<BlogPost[]>>;
   getPost(options: GetPostOptions): Promise<ApiResponse<BlogPost>>;
   getUserRoles(): Promise<ApiResponse<string[]>>;

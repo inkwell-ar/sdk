@@ -182,6 +182,10 @@ Created at: ${new Date().toISOString()}`,
      wallet: yourWallet
    });
    
+   // Get blog information
+   const info = await blogSDK.getInfo();
+   console.log('Blog:', info.data.name, 'by', info.data.author);
+   
    // Get all posts
    const posts = await blogSDK.getAllPosts();
    

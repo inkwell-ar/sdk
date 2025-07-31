@@ -6,6 +6,7 @@ import {
   ApiResponse,
   BlogPost,
   BlogDetails,
+  BlogInfo,
   CreatePostData,
   UpdatePostData,
   UpdateBlogDetailsData,
@@ -74,6 +75,27 @@ export class InkwellBlogSDK implements BlogSDK {
       };
     } catch (error) {
       throw new Error(`Failed to deploy Inkwell Blog process: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get blog information
+   */
+  async getInfo(): Promise<ApiResponse<BlogInfo>> {
+    try {
+      const result = await this.aoconnect.dryRun({
+        process: this.processId,
+        tags: [
+          { name: 'Action', value: 'Info' }
+        ]
+      });
+
+      return this.parseInfoResponse(result);
+    } catch (error) {
+      return {
+        success: false,
+        data: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
     }
   }
 
@@ -409,6 +431,62 @@ export class InkwellBlogSDK implements BlogSDK {
       return {
         success: false,
         data: error instanceof Error ? error.message : 'Failed to parse response'
+      };
+    }
+  }
+
+  /**
+   * Parse the Info response from the AO process
+   */
+  private parseInfoResponse(result: any): ApiResponse<BlogInfo> {
+    try {
+      if (result && result.Messages && result.Messages.length > 0) {
+        const message = result.Messages[0];
+        
+        // Info handler returns data in message tags and Data field
+        const info: BlogInfo = {
+          name: message.Tags?.Name || '',
+          author: message.Tags?.Author || '',
+          blogTitle: message.Tags?.['Blog-Title'] || '',
+          blogDescription: message.Tags?.['Blog-Description'] || '',
+          blogLogo: message.Tags?.['Blog-Logo'] || '',
+          details: {
+            title: message.Tags?.['Blog-Title'] || '',
+            description: message.Tags?.['Blog-Description'] || '',
+            logo: message.Tags?.['Blog-Logo'] || ''
+          }
+        };
+
+        // Also try to parse the Data field for additional details
+        if (message.Data) {
+          try {
+            const parsedData = JSON.parse(message.Data);
+            if (parsedData.success && parsedData.data) {
+              info.details = {
+                title: parsedData.data.title || info.details.title,
+                description: parsedData.data.description || info.details.description,
+                logo: parsedData.data.logo || info.details.logo
+              };
+            }
+          } catch (parseError) {
+            // If Data parsing fails, continue with tag-based info
+          }
+        }
+
+        return {
+          success: true,
+          data: info
+        };
+      }
+      
+      return {
+        success: false,
+        data: 'Invalid response format from process'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: error instanceof Error ? error.message : 'Failed to parse Info response'
       };
     }
   }

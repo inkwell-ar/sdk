@@ -8,8 +8,25 @@ async function basicUsage() {
   });
 
   try {
+    // Get blog information (public - no authentication required)
+    console.log('Fetching blog information...');
+    const infoResponse = await blogSDK.getInfo();
+    
+    if (infoResponse.success) {
+      const info = infoResponse.data;
+      console.log(`Blog: ${info.name}`);
+      console.log(`Author: ${info.author}`);
+      console.log(`Title: ${info.blogTitle}`);
+      console.log(`Description: ${info.blogDescription}`);
+      if (info.blogLogo) {
+        console.log(`Logo: ${info.blogLogo}`);
+      }
+    } else {
+      console.error('Failed to fetch blog info:', infoResponse.data);
+    }
+
     // Get all posts (public - no authentication required)
-    console.log('Fetching all posts...');
+    console.log('\nFetching all posts...');
     const allPostsResponse = await blogSDK.getAllPosts({ ordered: true });
     
     if (allPostsResponse.success) {

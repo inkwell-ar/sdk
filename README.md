@@ -52,6 +52,14 @@ const blogSDK = new InkwellBlogSDK({
 
 ### Public Methods (No Authentication Required)
 
+#### `getInfo()`
+Get blog information including name, author, and details.
+
+```typescript
+const response = await blogSDK.getInfo();
+// Returns: { name, author, blogTitle, blogDescription, blogLogo, details }
+```
+
 #### `getAllPosts(options?)`
 Get all blog posts.
 
@@ -230,6 +238,18 @@ interface BlogDetails {
 }
 ```
 
+### BlogInfo
+```typescript
+interface BlogInfo {
+  name: string;
+  author: string;
+  blogTitle: string;
+  blogDescription: string;
+  blogLogo: string;
+  details: BlogDetails;
+}
+```
+
 ### UpdateBlogDetailsData
 ```typescript
 interface UpdateBlogDetailsData {
@@ -299,6 +319,15 @@ import { InkwellBlogSDK } from 'inkwell-blog-sdk';
 const blogSDK = new InkwellBlogSDK({
   processId: 'your-process-id'
 });
+
+// Get blog information
+const infoResponse = await blogSDK.getInfo();
+if (infoResponse.success) {
+  const info = infoResponse.data;
+  console.log(`Blog: ${info.name} by ${info.author}`);
+  console.log(`Title: ${info.blogTitle}`);
+  console.log(`Description: ${info.blogDescription}`);
+}
 
 // Get all posts
 const postsResponse = await blogSDK.getAllPosts({ ordered: true });
