@@ -19,9 +19,9 @@ export type {
   RoleManagementOptions,
   RoleUpdateResult,
   DeployOptions,
-  DeployResult
+  DeployResult,
 } from './types';
 export { ValidationError } from './utils/validation';
 
 // Default export for convenience
-export default InkwellBlogSDK; 
+// export default InkwellBlogSDK;

@@ -9,6 +9,10 @@ dist/
 build/
 *.tsbuildinfo
 
+# Deployment artifacts
+deployment-*.json
+wallet.json
+
 # Environment variables
 .env
 .env.local

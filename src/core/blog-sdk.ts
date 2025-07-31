@@ -18,7 +18,7 @@ import {
   RoleManagementOptions,
   RoleUpdateResult,
   DeployOptions,
-  DeployResult
+  DeployResult,
 } from '../types';
 import {
   validateCreatePostData,
@@ -27,7 +27,7 @@ import {
   validateRoleManagementOptions,
   validateBlogDetailsData,
   validateSDKConfig,
-  ValidationError
+  ValidationError,
 } from '../utils/validation';
 
 export class InkwellBlogSDK implements BlogSDK {
@@ -37,7 +37,7 @@ export class InkwellBlogSDK implements BlogSDK {
   constructor(config: BlogSDKConfig) {
     validateSDKConfig(config);
     this.processId = config.processId;
-    this.aoconnect = config.aoconnect || connect();
+    this.aoconnect = config.aoconnect || connect({ MODE: 'legacy' });
   }
 
   /**
@@ -52,29 +52,31 @@ export class InkwellBlogSDK implements BlogSDK {
         tags: [
           { name: 'App-Name', value: 'Inkwell-Blog' },
           { name: 'App-Version', value: '1.0.0' },
-          ...(options.tags || [])
+          ...(options.tags || []),
         ],
         retry: {
           count: options.retry?.count || 10,
-          delay: options.retry?.delay || 3000
+          delay: options.retry?.delay || 3000,
         },
         minify: options.minify !== false,
         onBoot: options.onBoot || false,
         silent: options.silent || false,
-        forceSpawn: options.forceSpawn || false
+        forceSpawn: options.forceSpawn || false,
       };
 
       const result = await deployContract({
         ...defaultOptions,
-        wallet: options.wallet
+        wallet: options.wallet,
       });
 
       return {
         processId: result.processId,
-        messageId: result.messageId
+        messageId: result.messageId,
       };
     } catch (error) {
-      throw new Error(`Failed to deploy Inkwell Blog process: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to deploy Inkwell Blog process: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -85,16 +87,14 @@ export class InkwellBlogSDK implements BlogSDK {
     try {
       const result = await this.aoconnect.dryRun({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Info' }
-        ]
+        tags: [{ name: 'Action', value: 'Info' }],
       });
 
       return this.parseInfoResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -102,11 +102,11 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Get all posts from the blog
    */
-  async getAllPosts(options: GetPostsOptions = {}): Promise<ApiResponse<BlogPost[]>> {
+  async getAllPosts(
+    options: GetPostsOptions = {}
+  ): Promise<ApiResponse<BlogPost[]>> {
     try {
-      const tags = [
-        { name: 'Action', value: 'Get-All-Posts' }
-      ];
+      const tags = [{ name: 'Action', value: 'Get-All-Posts' }];
 
       if (options.ordered !== undefined) {
         tags.push({ name: 'Ordered', value: options.ordered.toString() });
@@ -114,14 +114,14 @@ export class InkwellBlogSDK implements BlogSDK {
 
       const result = await this.aoconnect.dryRun({
         process: this.processId,
-        tags
+        tags,
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -137,15 +137,15 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [
           { name: 'Action', value: 'Get-Post' },
-          { name: 'Id', value: options.id.toString() }
-        ]
+          { name: 'Id', value: options.id.toString() },
+        ],
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -157,16 +157,14 @@ export class InkwellBlogSDK implements BlogSDK {
     try {
       const result = await this.aoconnect.dryRun({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Get-User-Roles' }
-        ]
+        tags: [{ name: 'Action', value: 'Get-User-Roles' }],
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -180,17 +178,15 @@ export class InkwellBlogSDK implements BlogSDK {
 
       const result = await this.aoconnect.message({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Create-Post' }
-        ],
-        data: JSON.stringify(options.data)
+        tags: [{ name: 'Action', value: 'Create-Post' }],
+        data: JSON.stringify(options.data),
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -207,16 +203,16 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [
           { name: 'Action', value: 'Update-Post' },
-          { name: 'Id', value: options.id.toString() }
+          { name: 'Id', value: options.id.toString() },
         ],
-        data: JSON.stringify(options.data)
+        data: JSON.stringify(options.data),
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -232,15 +228,15 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [
           { name: 'Action', value: 'Delete-Post' },
-          { name: 'Id', value: options.id.toString() }
-        ]
+          { name: 'Id', value: options.id.toString() },
+        ],
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -248,23 +244,23 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Add editors to the blog (Admin role required)
    */
-  async addEditors(options: RoleManagementOptions): Promise<ApiResponse<RoleUpdateResult[]>> {
+  async addEditors(
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[]>> {
     try {
       validateRoleManagementOptions(options);
 
       const result = await this.aoconnect.message({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Add-Editors' }
-        ],
-        data: JSON.stringify({ accounts: options.accounts })
+        tags: [{ name: 'Action', value: 'Add-Editors' }],
+        data: JSON.stringify({ accounts: options.accounts }),
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -272,23 +268,23 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Remove editors from the blog (Admin role required)
    */
-  async removeEditors(options: RoleManagementOptions): Promise<ApiResponse<RoleUpdateResult[]>> {
+  async removeEditors(
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[]>> {
     try {
       validateRoleManagementOptions(options);
 
       const result = await this.aoconnect.message({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Remove-Editors' }
-        ],
-        data: JSON.stringify({ accounts: options.accounts })
+        tags: [{ name: 'Action', value: 'Remove-Editors' }],
+        data: JSON.stringify({ accounts: options.accounts }),
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -296,23 +292,23 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Add admins to the blog (Admin role required)
    */
-  async addAdmins(options: RoleManagementOptions): Promise<ApiResponse<RoleUpdateResult[]>> {
+  async addAdmins(
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[]>> {
     try {
       validateRoleManagementOptions(options);
 
       const result = await this.aoconnect.message({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Add-Admins' }
-        ],
-        data: JSON.stringify({ accounts: options.accounts })
+        tags: [{ name: 'Action', value: 'Add-Admins' }],
+        data: JSON.stringify({ accounts: options.accounts }),
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -320,23 +316,23 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Remove admins from the blog (Admin role required)
    */
-  async removeAdmins(options: RoleManagementOptions): Promise<ApiResponse<RoleUpdateResult[]>> {
+  async removeAdmins(
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[]>> {
     try {
       validateRoleManagementOptions(options);
 
       const result = await this.aoconnect.message({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Remove-Admins' }
-        ],
-        data: JSON.stringify({ accounts: options.accounts })
+        tags: [{ name: 'Action', value: 'Remove-Admins' }],
+        data: JSON.stringify({ accounts: options.accounts }),
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -348,16 +344,14 @@ export class InkwellBlogSDK implements BlogSDK {
     try {
       const result = await this.aoconnect.dryRun({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Get-Editors' }
-        ]
+        tags: [{ name: 'Action', value: 'Get-Editors' }],
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -369,16 +363,14 @@ export class InkwellBlogSDK implements BlogSDK {
     try {
       const result = await this.aoconnect.dryRun({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Get-Admins' }
-        ]
+        tags: [{ name: 'Action', value: 'Get-Admins' }],
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -386,23 +378,23 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Set blog details (Admin role required)
    */
-  async setBlogDetails(options: { data: UpdateBlogDetailsData }): Promise<ApiResponse<BlogDetails>> {
+  async setBlogDetails(options: {
+    data: UpdateBlogDetailsData;
+  }): Promise<ApiResponse<BlogDetails>> {
     try {
       validateBlogDetailsData(options.data);
 
       const result = await this.aoconnect.message({
         process: this.processId,
-        tags: [
-          { name: 'Action', value: 'Set-Blog-Details' }
-        ],
-        data: JSON.stringify(options.data)
+        tags: [{ name: 'Action', value: 'Set-Blog-Details' }],
+        data: JSON.stringify(options.data),
       });
 
       return this.parseResponse(result);
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Unknown error occurred'
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -418,19 +410,20 @@ export class InkwellBlogSDK implements BlogSDK {
           const parsed = JSON.parse(message.Data);
           return {
             success: parsed.success,
-            data: parsed.data
+            data: parsed.data,
           };
         }
       }
-      
+
       return {
         success: false,
-        data: 'Invalid response format from process'
+        data: 'Invalid response format from process',
       };
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Failed to parse response'
+        data:
+          error instanceof Error ? error.message : 'Failed to parse response',
       };
     }
   }
@@ -442,7 +435,7 @@ export class InkwellBlogSDK implements BlogSDK {
     try {
       if (result && result.Messages && result.Messages.length > 0) {
         const message = result.Messages[0];
-        
+
         // Info handler returns data in message tags and Data field
         const info: BlogInfo = {
           name: message.Tags?.Name || '',
@@ -453,8 +446,8 @@ export class InkwellBlogSDK implements BlogSDK {
           details: {
             title: message.Tags?.['Blog-Title'] || '',
             description: message.Tags?.['Blog-Description'] || '',
-            logo: message.Tags?.['Blog-Logo'] || ''
-          }
+            logo: message.Tags?.['Blog-Logo'] || '',
+          },
         };
 
         // Also try to parse the Data field for additional details
@@ -464,8 +457,9 @@ export class InkwellBlogSDK implements BlogSDK {
             if (parsedData.success && parsedData.data) {
               info.details = {
                 title: parsedData.data.title || info.details.title,
-                description: parsedData.data.description || info.details.description,
-                logo: parsedData.data.logo || info.details.logo
+                description:
+                  parsedData.data.description || info.details.description,
+                logo: parsedData.data.logo || info.details.logo,
               };
             }
           } catch (parseError) {
@@ -475,19 +469,22 @@ export class InkwellBlogSDK implements BlogSDK {
 
         return {
           success: true,
-          data: info
+          data: info,
         };
       }
-      
+
       return {
         success: false,
-        data: 'Invalid response format from process'
+        data: 'Invalid response format from process',
       };
     } catch (error) {
       return {
         success: false,
-        data: error instanceof Error ? error.message : 'Failed to parse Info response'
+        data:
+          error instanceof Error
+            ? error.message
+            : 'Failed to parse Info response',
       };
     }
   }
-} 
+}

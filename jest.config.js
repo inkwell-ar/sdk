@@ -13,7 +13,8 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/examples/**',
-    '!src/tests/**'
+    '!src/tests/**',
+    '!scripts/**'
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],

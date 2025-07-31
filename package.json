@@ -1,5 +1,5 @@
 {
-  "name": "Inkwell-SDK",
+  "name": "inkwell-sdk",
   "version": "0.0.1",
   "description": "SDK for interacting with the Inkwell Blog CRUD AO process",
   "main": "dist/index.js",
@@ -10,7 +10,8 @@
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
-    "deploy": "ts-node scripts/deploy.ts"
+    "deploy": "ts-node scripts/deploy.ts",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "ao",
@@ -20,13 +21,25 @@
     "sdk",
     "aoconnect",
     "ao-deploy",
-    "inkwell"
+    "inkwell",
+    "decentralized",
+    "blockchain",
+    "typescript"
   ],
   "author": "@7i7o",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/7i7o/inkwell-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/7i7o/inkwell-sdk/issues"
+  },
+  "homepage": "https://github.com/7i7o/inkwell-sdk#readme",
   "dependencies": {
     "@permaweb/aoconnect": "^0.0.85",
-    "ao-deploy": "^0.9.1"
+    "ao-deploy": "^0.9.1",
+    "arweave": "^1.15.7"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
@@ -42,6 +55,10 @@
   },
   "files": [
     "dist/**/*",
-    "README.md"
-  ]
+    "README.md",
+    "lua-process/**/*"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

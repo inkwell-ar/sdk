@@ -16,13 +16,19 @@ A TypeScript SDK for interacting with the Inkwell Blog CRUD AO process using aoc
 ## Installation
 
 ```bash
-npm install inkwell-blog-sdk
+npm install inkwell-sdk
+```
+
+Or using yarn:
+
+```bash
+yarn add inkwell-sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { InkwellBlogSDK } from 'inkwell-blog-sdk';
+import { InkwellBlogSDK } from 'inkwell-sdk';
 
 // Initialize the SDK
 const blogSDK = new InkwellBlogSDK({
@@ -266,7 +272,7 @@ The SDK includes built-in deployment functionality using [ao-deploy](https://git
 ### Deploy a New Blog Process
 
 ```typescript
-import { InkwellBlogSDK } from 'inkwell-blog-sdk';
+import { InkwellBlogSDK } from 'inkwell-sdk';
 
 // Deploy a new blog process
 const deployResult = await InkwellBlogSDK.deploy({
@@ -314,7 +320,7 @@ interface DeployOptions {
 
 ### Basic Usage
 ```typescript
-import { InkwellBlogSDK } from 'inkwell-blog-sdk';
+import { InkwellBlogSDK } from 'inkwell-sdk';
 
 const blogSDK = new InkwellBlogSDK({
   processId: 'your-process-id'
@@ -340,7 +346,7 @@ if (postsResponse.success) {
 
 ### With Wallet Authentication
 ```typescript
-import { InkwellBlogSDK } from 'inkwell-blog-sdk';
+import { InkwellBlogSDK } from 'inkwell-sdk';
 import Arweave from 'arweave';
 
 const arweave = Arweave.init();
@@ -446,6 +452,46 @@ npm test
 ```bash
 npm run lint
 ```
+
+### Publishing to npm
+
+Before publishing, make sure to:
+
+1. **Build the package:**
+   ```bash
+   npm run build
+   ```
+
+2. **Test the build:**
+   ```bash
+   npm test
+   ```
+
+3. **Check package contents:**
+   ```bash
+   npm pack --dry-run
+   ```
+
+4. **Publish to npm:**
+   ```bash
+   npm publish
+   ```
+
+The `prepublishOnly` script will automatically run the build before publishing.
+
+## Package Contents
+
+The npm package includes:
+- **Compiled TypeScript** - Ready-to-use JavaScript files in `dist/`
+- **Type Definitions** - Full TypeScript support with `.d.ts` files
+- **Lua Process Files** - The `lua-process/` directory with your AO process files
+- **Documentation** - This README file
+
+The package excludes:
+- Source TypeScript files (`src/`)
+- Examples and tests
+- Development configuration files
+- Build artifacts
 
 ## License
 

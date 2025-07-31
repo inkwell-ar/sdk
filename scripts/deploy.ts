@@ -175,7 +175,7 @@ Created at: ${new Date().toISOString()}`,
     console.log('1. View your blog:', `https://www.ao.link/#/entity/${deployResult.processId}`);
     console.log('2. Use the SDK to interact with your blog:');
     console.log(`
-   import { InkwellBlogSDK } from 'inkwell-blog-sdk';
+   import { InkwellBlogSDK } from 'inkwell-sdk';
    
    const blogSDK = new InkwellBlogSDK({
      processId: '${deployResult.processId}',

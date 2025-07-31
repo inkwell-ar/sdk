@@ -46,7 +46,7 @@ export interface UpdatePostData extends CreatePostData {}
 
 export interface ApiResponse<T = any> {
   success: boolean;
-  data: T;
+  data: T | string;
 }
 
 export interface RoleUpdateResult {
@@ -112,6 +112,7 @@ export interface DeployResult {
 export interface DeployOptions {
   name?: string;
   wallet?: string | any;
+  contractPath?: string;
   tags?: Array<{ name: string; value: string }>;
   retry?: {
     count: number;
@@ -132,18 +133,28 @@ export interface BlogSDK {
   getAllPosts(options?: GetPostsOptions): Promise<ApiResponse<BlogPost[]>>;
   getPost(options: GetPostOptions): Promise<ApiResponse<BlogPost>>;
   getUserRoles(): Promise<ApiResponse<string[]>>;
-  
+
   // Editor methods
   createPost(options: CreatePostOptions): Promise<ApiResponse<BlogPost>>;
   updatePost(options: UpdatePostOptions): Promise<ApiResponse<BlogPost>>;
   deletePost(options: DeletePostOptions): Promise<ApiResponse<BlogPost>>;
-  
+
   // Admin methods
-  addEditors(options: RoleManagementOptions): Promise<ApiResponse<RoleUpdateResult[]>>;
-  removeEditors(options: RoleManagementOptions): Promise<ApiResponse<RoleUpdateResult[]>>;
-  addAdmins(options: RoleManagementOptions): Promise<ApiResponse<RoleUpdateResult[]>>;
-  removeAdmins(options: RoleManagementOptions): Promise<ApiResponse<RoleUpdateResult[]>>;
+  addEditors(
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[]>>;
+  removeEditors(
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[]>>;
+  addAdmins(
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[]>>;
+  removeAdmins(
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[]>>;
   getEditors(): Promise<ApiResponse<string[]>>;
   getAdmins(): Promise<ApiResponse<string[]>>;
-  setBlogDetails(options: { data: UpdateBlogDetailsData }): Promise<ApiResponse<BlogDetails>>;
-} 
+  setBlogDetails(options: {
+    data: UpdateBlogDetailsData;
+  }): Promise<ApiResponse<BlogDetails>>;
+}

@@ -1,4 +1,10 @@
-import { InkwellBlogSDK, DeployOptions } from '../index';
+import {
+  InkwellBlogSDK,
+  DeployOptions,
+  BlogInfo,
+  BlogDetails,
+  BlogPost,
+} from '../index';
 import Arweave from 'arweave';
 
 // Example: Deploy and use a new Inkwell Blog process
@@ -8,18 +14,18 @@ async function deployAndUseBlog() {
     const arweave = Arweave.init({
       host: 'arweave.net',
       port: 443,
-      protocol: 'https'
+      protocol: 'https',
     });
 
     // Load your wallet (you can load from file, environment variable, etc.)
     // For this example, we'll create a new wallet, but in production you'd load an existing one
     const wallet = await arweave.wallets.generate();
-    
+
     console.log('Wallet address:', await arweave.wallets.getAddress(wallet));
 
     // Deploy a new Inkwell Blog process
     console.log('\n=== Deploying Inkwell Blog Process ===');
-    
+
     const deployOptions: DeployOptions = {
       name: 'my-blog',
       wallet: wallet,
@@ -27,39 +33,43 @@ async function deployAndUseBlog() {
       luaPath: './lua-process/?.lua', // Path to Lua modules
       tags: [
         { name: 'Blog-Name', value: 'My Personal Blog' },
-        { name: 'Author', value: '@myhandle' }
+        { name: 'Author', value: '@myhandle' },
       ],
       retry: {
         count: 5,
-        delay: 2000
+        delay: 2000,
       },
       minify: true, // Minify the contract for smaller size
-      silent: false // Show deployment progress
+      silent: false, // Show deployment progress
     };
 
     const deployResult = await InkwellBlogSDK.deploy(deployOptions);
-    
+
     console.log('✅ Blog process deployed successfully!');
     console.log(`   Process ID: ${deployResult.processId}`);
-    console.log(`   Process URL: https://www.ao.link/#/entity/${deployResult.processId}`);
-    
+    console.log(
+      `   Process URL: https://www.ao.link/#/entity/${deployResult.processId}`
+    );
+
     if (deployResult.messageId) {
-      console.log(`   Deployment Message: https://www.ao.link/#/message/${deployResult.messageId}`);
+      console.log(
+        `   Deployment Message: https://www.ao.link/#/message/${deployResult.messageId}`
+      );
     }
 
     // Initialize the SDK with the new process
     console.log('\n=== Initializing SDK ===');
     const blogSDK = new InkwellBlogSDK({
       processId: deployResult.processId,
-      wallet: wallet
+      wallet: wallet,
     });
 
     // Get initial blog info
     console.log('\n=== Getting Blog Info ===');
     const infoResponse = await blogSDK.getInfo();
-    
+
     if (infoResponse.success) {
-      const info = infoResponse.data;
+      const info = infoResponse.data as BlogInfo;
       console.log('✅ Blog info retrieved:');
       console.log(`   Name: ${info.name}`);
       console.log(`   Author: ${info.author}`);
@@ -75,14 +85,15 @@ async function deployAndUseBlog() {
       data: {
         title: 'My Personal Blog',
         description: 'A blog about technology, life, and everything in between',
-        logo: 'https://example.com/logo.png'
-      }
+        logo: 'https://example.com/logo.png',
+      },
     });
 
     if (blogDetailsResponse.success) {
+      const blogDetailsResponseData = blogDetailsResponse.data as BlogDetails;
       console.log('✅ Blog details set successfully!');
-      console.log('   Title:', blogDetailsResponse.data.title);
-      console.log('   Description:', blogDetailsResponse.data.description);
+      console.log('   Title:', blogDetailsResponseData.title);
+      console.log('   Description:', blogDetailsResponseData.description);
     } else {
       console.error('❌ Failed to set blog details:', blogDetailsResponse.data);
     }
@@ -110,16 +121,18 @@ Created at: ${new Date().toISOString()}`,
         published_at: Date.now(),
         last_update: Date.now(),
         labels: ['welcome', 'first-post', 'inkwell'],
-        authors: ['@myhandle']
-      }
+        authors: ['@myhandle'],
+      },
     });
 
     if (createPostResponse.success) {
-      const post = createPostResponse.data;
+      const post = createPostResponse.data as BlogPost;
       console.log('✅ First blog post created successfully!');
       console.log(`   Post ID: ${post.id}`);
       console.log(`   Title: ${post.title}`);
-      console.log(`   Published: ${new Date(post.published_at).toLocaleString()}`);
+      console.log(
+        `   Published: ${new Date(post.published_at).toLocaleString()}`
+      );
     } else {
       console.error('❌ Failed to create blog post:', createPostResponse.data);
     }
@@ -127,20 +140,23 @@ Created at: ${new Date().toISOString()}`,
     // Get all posts to verify
     console.log('\n=== Fetching All Posts ===');
     const postsResponse = await blogSDK.getAllPosts({ ordered: true });
-    
+
     if (postsResponse.success) {
-      const posts = postsResponse.data;
+      const posts = postsResponse.data as BlogPost[];
       console.log(`✅ Found ${posts.length} post(s)`);
-      posts.forEach(post => {
+      posts.forEach((post) => {
         console.log(`   - ${post.title} (ID: ${post.id})`);
       });
     } else {
       console.error('❌ Failed to fetch posts:', postsResponse.data);
     }
 
-    console.log('\n🎉 Blog setup complete! Your blog is now live on the Arweave network.');
-    console.log(`📖 View your blog: https://www.ao.link/#/entity/${deployResult.processId}`);
-
+    console.log(
+      '\n🎉 Blog setup complete! Your blog is now live on the Arweave network.'
+    );
+    console.log(
+      `📖 View your blog: https://www.ao.link/#/entity/${deployResult.processId}`
+    );
   } catch (error) {
     console.error('❌ Error in deployment process:', error);
   }
@@ -150,14 +166,14 @@ Created at: ${new Date().toISOString()}`,
 async function deployWithCustomConfig() {
   try {
     console.log('\n=== Deploying with Custom Configuration ===');
-    
+
     const deployOptions: DeployOptions = {
       name: 'custom-blog',
       contractPath: './lua-process/inkwell_blog.lua',
       luaPath: './lua-process/?.lua',
       tags: [
         { name: 'Blog-Type', value: 'Technology' },
-        { name: 'Language', value: 'English' }
+        { name: 'Language', value: 'English' },
       ],
       minify: true,
       // Custom transformer to modify the contract before deployment
@@ -167,15 +183,15 @@ async function deployWithCustomConfig() {
       },
       retry: {
         count: 3,
-        delay: 1000
-      }
+        delay: 1000,
+      },
     };
 
     const result = await InkwellBlogSDK.deploy(deployOptions);
-    
+
     console.log('✅ Custom blog deployed!');
     console.log(`   Process ID: ${result.processId}`);
-    
+
     return result.processId;
   } catch (error) {
     console.error('❌ Custom deployment failed:', error);
@@ -187,47 +203,48 @@ async function deployWithCustomConfig() {
 async function deployMultipleBlogs() {
   try {
     console.log('\n=== Deploying Multiple Blogs ===');
-    
+
     const blogConfigs = [
       {
         name: 'tech-blog',
-        tags: [{ name: 'Category', value: 'Technology' }]
+        tags: [{ name: 'Category', value: 'Technology' }],
       },
       {
         name: 'personal-blog',
-        tags: [{ name: 'Category', value: 'Personal' }]
+        tags: [{ name: 'Category', value: 'Personal' }],
       },
       {
         name: 'travel-blog',
-        tags: [{ name: 'Category', value: 'Travel' }]
-      }
+        tags: [{ name: 'Category', value: 'Travel' }],
+      },
     ];
 
-    const deployedBlogs = [];
+    const deployedBlogs: { name: string; processId: string; url: string }[] =
+      [];
 
     for (const config of blogConfigs) {
       console.log(`\nDeploying ${config.name}...`);
-      
+
       const result = await InkwellBlogSDK.deploy({
         name: config.name,
         contractPath: './lua-process/inkwell_blog.lua',
         luaPath: './lua-process/?.lua',
         tags: config.tags,
         minify: true,
-        silent: true
+        silent: true,
       });
 
       deployedBlogs.push({
         name: config.name,
         processId: result.processId,
-        url: `https://www.ao.link/#/entity/${result.processId}`
+        url: `https://www.ao.link/#/entity/${result.processId}`,
       });
 
       console.log(`✅ ${config.name} deployed: ${result.processId}`);
     }
 
     console.log('\n📋 Deployed Blogs Summary:');
-    deployedBlogs.forEach(blog => {
+    deployedBlogs.forEach((blog) => {
       console.log(`   ${blog.name}: ${blog.url}`);
     });
 
@@ -241,7 +258,7 @@ async function deployMultipleBlogs() {
 // Run examples
 if (require.main === module) {
   console.log('=== Inkwell Blog SDK - Deployment Examples ===\n');
-  
+
   deployAndUseBlog()
     .then(() => {
       console.log('\n=== Running Custom Deployment Example ===');
@@ -255,4 +272,4 @@ if (require.main === module) {
       console.log('\n🎉 All deployment examples completed successfully!');
     })
     .catch(console.error);
-} 
+}
