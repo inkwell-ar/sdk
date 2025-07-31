@@ -1,6 +1,6 @@
 {
-  "name": "inkwell-blog-sdk",
-  "version": "1.0.0",
+  "name": "inkwell-sdk",
+  "version": "0.0.1",
   "description": "SDK for interacting with the Inkwell Blog CRUD AO process",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,11 +12,11 @@
     "format": "prettier --write src/**/*.ts",
     "deploy": "ts-node scripts/deploy.ts"
   },
-  "keywords": ["ao", "arweave", "blog", "crud", "sdk", "aoconnect"],
+  "keywords": ["ao", "arweave", "blog", "crud", "sdk", "aoconnect", "ao-deploy", "inkwell"],
   "author": "@7i7o",
   "license": "MIT",
   "dependencies": {
-    "@permaweb/aoconnect": "^0.5.0",
+    "@permaweb/aoconnect": "^0.0.85",
     "ao-deploy": "^0.9.1"
   },
   "devDependencies": {
