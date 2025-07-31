@@ -48,7 +48,7 @@ local function validate_blog_details(data)
         return false, "Field body must be a string if provided"
     end
 
-    if (~data.title or data.title == "") and (~data.description or data.description == "") and (~data.logo or data.logo == "") then
+    if (not data.title or data.title == "") and (not data.description or data.description == "") and (not data.logo or data.logo == "") then
         return false, "At least one field is required"
     end
 
