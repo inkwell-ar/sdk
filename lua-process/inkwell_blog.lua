@@ -363,6 +363,24 @@ end
 
 -- Public Handlers
 Handlers.add(
+    "Info",
+    Handlers.utils.hasMatchingTag("Action", "Info"),
+    safe_handler(function(msg)
+        msg.reply({
+            Name = Name,
+            Author = Author,
+            ["Blog-Title"] = Details.title,
+            ["Blog-Description"] = Details.description,
+            ["Blog-Logo"] = Details.logo,
+            Data = json.encode({
+                success = true,
+                data = Details
+            })
+        })
+    end)
+)
+
+Handlers.add(
     "Get-All-Posts",
     Handlers.utils.hasMatchingTag("Action", "Get-All-Posts"),
     safe_handler(function(msg)
