@@ -1,8 +1,13 @@
 local json = require('json')
 local AccessControl = require('access_control')
 
-Name = "Blog CRUD"
+Name = "Inkwell Blog"
 Author = "@7i7o"
+Details = {
+    title = "Blog Title",
+    description = "Blog Description",
+    logo = ""
+}
 
 -- Initialize AccessControl
 AccessControl.init(Owner, Owner, false)
@@ -24,6 +29,31 @@ local function initialize_next_id()
     Next_id = max_id + 1
 end
 initialize_next_id()
+
+-- Helper function to validate blog details
+local function validate_blog_details(data)
+    if not data or type(data) ~= "table" then
+        return false, "Data is required and must be a table"
+    end
+
+    if data.title and type(data.title) ~= "string" then
+        return false, "Field title must be a non-empty string"
+    end
+
+    if data.description and type(data.description) ~= "string" then
+        return false, "Field description and must be a non-empty string"
+    end
+
+    if data.logo and type(data.logo) ~= "string" then
+        return false, "Field body must be a string if provided"
+    end
+
+    if (~data.title or data.title == "") and (~data.description or data.description == "") and (~data.logo or data.logo == "") then
+        return false, "At least one field is required"
+    end
+
+    return true, nil
+end
 
 -- Helper function to validate posts data
 local function validate_post(data)
@@ -310,6 +340,25 @@ local function get_user_roles(msg)
 end
 
 ----------------------------------
+-- Set Blog Details
+local function set_details(data)
+    local success, error = validate_blog_details(data)
+
+    if not success then
+        return false, error
+    end
+
+    local new_details = {
+        title = data.title or Details.title,
+        description = data.description or Details.description,
+        logo = data.logo or Details.logo
+    }
+
+    Details = new_details
+    return true, new_details
+end
+
+----------------------------------
 ---  Message handlers for AO process
 
 -- Public Handlers
@@ -454,6 +503,29 @@ Handlers.add(
     Handlers.utils.hasMatchingTag("Action", "Get-Admins"),
     safe_handler(function(msg)
         local success, result_or_error = get_role_members(msg, AccessControl.ROLES.EDITOR)
+        reply_msg(msg, success, result_or_error)
+    end)
+)
+
+Handlers.add(
+    "Set-Blog-Details",
+    Handlers.utils.hasMatchingTag("Action", "Set-Blog-Details"),
+    safe_handler(function(msg)
+        local is_admin, error = AccessControl.only_role(msg.From, AccessControl.ROLES.DEFAULT_ADMIN)
+
+        if not is_admin then
+            reply_msg(msg, false, error)
+            return false, error
+        end
+
+        local data, err = safe_json_decode(msg.Data)
+        if not data then
+            reply_msg(msg, false, err)
+            return false, err
+        end
+
+        local success, result_or_error = set_details(data)
+
         reply_msg(msg, success, result_or_error)
     end)
 )
