@@ -350,12 +350,33 @@ import { InkwellBlogSDK } from 'inkwell-sdk';
 import Arweave from 'arweave';
 
 const arweave = Arweave.init();
-const wallet = await arweave.wallets.generate(); // Or load existing wallet
+
+// Load or generate wallet (automatically saves to wallet.json)
+let wallet: any;
+const walletPath = 'wallet.json';
+
+try {
+  const fs = require('fs');
+  if (fs.existsSync(walletPath)) {
+    console.log('Loading existing wallet...');
+    const walletData = fs.readFileSync(walletPath, 'utf8');
+    wallet = JSON.parse(walletData);
+  } else {
+    console.log('Generating new wallet...');
+    wallet = await arweave.wallets.generate();
+    fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
+    console.log('Wallet saved to wallet.json');
+  }
+} catch (error) {
+  console.log('Generating new wallet due to error...');
+  wallet = await arweave.wallets.generate();
+}
 
 const blogSDK = new InkwellBlogSDK({
   processId: 'your-process-id',
   wallet: wallet
 });
+```
 
 // Set blog details (requires Admin role)
 const blogDetailsResponse = await blogSDK.setBlogDetails({
@@ -393,6 +414,17 @@ try {
   console.error('Unexpected error:', error);
 }
 ```
+
+## Wallet Management
+
+The SDK examples automatically handle wallet management:
+
+- **Default wallet file**: `wallet.json` in the project root
+- **Auto-generation**: If no wallet exists, a new one is generated and saved
+- **Persistence**: Wallet is saved to file for future use
+- **Error handling**: Falls back to generating a new wallet if file operations fail
+
+**⚠️ Security Note**: The `wallet.json` file contains your private keys. Keep it secure and never commit it to version control.
 
 ## Role System
 

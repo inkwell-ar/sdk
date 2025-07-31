@@ -16,10 +16,39 @@ async function authenticatedUsage() {
     protocol: 'https',
   });
 
-  // Load your wallet (you can load from file, environment variable, etc.)
-  // For this example, we'll create a new wallet, but in production you'd load an existing one
-  const wallet = await arweave.wallets.generate();
-
+  // Load or generate wallet
+  let wallet: any;
+  const walletPath = 'wallet.json';
+  
+  try {
+    // Try to load existing wallet
+    const fs = require('fs');
+    if (fs.existsSync(walletPath)) {
+      console.log(`📁 Loading wallet from ${walletPath}...`);
+      const walletData = fs.readFileSync(walletPath, 'utf8');
+      wallet = JSON.parse(walletData);
+    } else {
+      console.log('🔑 Generating new wallet...');
+      wallet = await arweave.wallets.generate();
+      
+      // Save wallet to file
+      fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
+      console.log(`💾 Wallet saved to ${walletPath}`);
+    }
+  } catch (error) {
+    console.log('🔑 Generating new wallet due to error...');
+    wallet = await arweave.wallets.generate();
+    
+    // Try to save wallet to file
+    try {
+      const fs = require('fs');
+      fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
+      console.log(`💾 Wallet saved to ${walletPath}`);
+    } catch (saveError) {
+      console.warn('⚠️  Could not save wallet to file:', saveError.message);
+    }
+  }
+  
   console.log('Wallet address:', await arweave.wallets.getAddress(wallet));
 
   // Initialize the SDK with wallet for authenticated operations

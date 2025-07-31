@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { InkwellBlogSDK } from '../src/index';
+import { BlogDetails, BlogPost, InkwellBlogSDK } from '../src/index';
 import Arweave from 'arweave';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -13,24 +13,37 @@ async function main() {
     const arweave = Arweave.init({
       host: 'arweave.net',
       port: 443,
-      protocol: 'https'
+      protocol: 'https',
     });
 
-    // Check for wallet file
+    // Load or generate wallet
     const walletPath = process.argv[2] || 'wallet.json';
     let wallet: any;
 
-    if (fs.existsSync(walletPath)) {
-      console.log(`📁 Loading wallet from ${walletPath}...`);
-      const walletData = fs.readFileSync(walletPath, 'utf8');
-      wallet = JSON.parse(walletData);
-    } else {
-      console.log('🔑 Generating new wallet...');
+    try {
+      if (fs.existsSync(walletPath)) {
+        console.log(`📁 Loading wallet from ${walletPath}...`);
+        const walletData = fs.readFileSync(walletPath, 'utf8');
+        wallet = JSON.parse(walletData);
+      } else {
+        console.log('🔑 Generating new wallet...');
+        wallet = await arweave.wallets.generate();
+
+        // Save wallet to file
+        fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
+        console.log(`💾 Wallet saved to ${walletPath}`);
+      }
+    } catch (error) {
+      console.log('🔑 Generating new wallet due to error...');
       wallet = await arweave.wallets.generate();
-      
-      // Save wallet to file
-      fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
-      console.log(`💾 Wallet saved to ${walletPath}`);
+
+      // Try to save wallet to file
+      try {
+        fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
+        console.log(`💾 Wallet saved to ${walletPath}`);
+      } catch (saveError) {
+        console.warn('⚠️  Could not save wallet to file:', saveError.message);
+      }
     }
 
     const walletAddress = await arweave.wallets.getAddress(wallet);
@@ -46,13 +59,17 @@ async function main() {
 
     if (!fs.existsSync(contractPath)) {
       console.error(`❌ Contract file not found: ${contractPath}`);
-      console.log('Please make sure you have the inkwell_blog.lua file in the lua-process directory.');
+      console.log(
+        'Please make sure you have the inkwell_blog.lua file in the lua-process directory.'
+      );
       process.exit(1);
     }
 
     if (!fs.existsSync(accessControlPath)) {
       console.error(`❌ Access control file not found: ${accessControlPath}`);
-      console.log('Please make sure you have the access_control.lua file in the lua-process directory.');
+      console.log(
+        'Please make sure you have the access_control.lua file in the lua-process directory.'
+      );
       process.exit(1);
     }
 
@@ -60,7 +77,7 @@ async function main() {
 
     // Deploy the blog process
     console.log('🚀 Deploying Inkwell Blog process...');
-    
+
     const deployResult = await InkwellBlogSDK.deploy({
       name: blogName,
       wallet: wallet,
@@ -69,29 +86,33 @@ async function main() {
       tags: [
         { name: 'Blog-Name', value: blogName },
         { name: 'Deployed-By', value: 'Inkwell-SDK' },
-        { name: 'Deployment-Date', value: new Date().toISOString() }
+        { name: 'Deployment-Date', value: new Date().toISOString() },
       ],
       retry: {
         count: 5,
-        delay: 3000
+        delay: 3000,
       },
       minify: true,
-      silent: false
+      silent: false,
     });
 
     console.log('\n✅ Blog process deployed successfully!');
     console.log(`   Process ID: ${deployResult.processId}`);
-    console.log(`   Process URL: https://www.ao.link/#/entity/${deployResult.processId}`);
-    
+    console.log(
+      `   Process URL: https://www.ao.link/#/entity/${deployResult.processId}`
+    );
+
     if (deployResult.messageId) {
-      console.log(`   Deployment Message: https://www.ao.link/#/message/${deployResult.messageId}`);
+      console.log(
+        `   Deployment Message: https://www.ao.link/#/message/${deployResult.messageId}`
+      );
     }
 
     // Initialize SDK with the new process
     console.log('\n🔧 Initializing SDK...');
     const blogSDK = new InkwellBlogSDK({
       processId: deployResult.processId,
-      wallet: wallet
+      wallet: wallet,
     });
 
     // Set default blog details
@@ -100,14 +121,15 @@ async function main() {
       data: {
         title: `${blogName.charAt(0).toUpperCase() + blogName.slice(1)}`,
         description: 'A blog powered by Inkwell Blog SDK',
-        logo: ''
-      }
+        logo: '',
+      },
     });
 
     if (blogDetailsResponse.success) {
+      const blogDetailsResponseData = blogDetailsResponse.data as BlogDetails;
       console.log('✅ Blog details set successfully!');
-      console.log(`   Title: ${blogDetailsResponse.data.title}`);
-      console.log(`   Description: ${blogDetailsResponse.data.description}`);
+      console.log(`   Title: ${blogDetailsResponseData.title}`);
+      console.log(`   Description: ${blogDetailsResponseData.description}`);
     } else {
       console.log('⚠️  Failed to set blog details:', blogDetailsResponse.data);
     }
@@ -139,17 +161,20 @@ Created at: ${new Date().toISOString()}`,
         published_at: Date.now(),
         last_update: Date.now(),
         labels: ['welcome', 'first-post', 'inkwell'],
-        authors: [walletAddress]
-      }
+        authors: [walletAddress],
+      },
     });
 
     if (createPostResponse.success) {
-      const post = createPostResponse.data;
+      const post = createPostResponse.data as BlogPost;
       console.log('✅ Welcome post created successfully!');
       console.log(`   Post ID: ${post.id}`);
       console.log(`   Title: ${post.title}`);
     } else {
-      console.log('⚠️  Failed to create welcome post:', createPostResponse.data);
+      console.log(
+        '⚠️  Failed to create welcome post:',
+        createPostResponse.data
+      );
     }
 
     // Save deployment info to file
@@ -161,8 +186,10 @@ Created at: ${new Date().toISOString()}`,
       deployedAt: new Date().toISOString(),
       urls: {
         process: `https://www.ao.link/#/entity/${deployResult.processId}`,
-        message: deployResult.messageId ? `https://www.ao.link/#/message/${deployResult.messageId}` : null
-      }
+        message: deployResult.messageId
+          ? `https://www.ao.link/#/message/${deployResult.messageId}`
+          : null,
+      },
     };
 
     const deploymentFile = `deployment-${blogName}.json`;
@@ -170,9 +197,14 @@ Created at: ${new Date().toISOString()}`,
     console.log(`\n💾 Deployment info saved to ${deploymentFile}`);
 
     // Display usage instructions
-    console.log('\n🎉 Deployment complete! Your blog is now live on the Arweave network.');
+    console.log(
+      '\n🎉 Deployment complete! Your blog is now live on the Arweave network.'
+    );
     console.log('\n📖 Next steps:');
-    console.log('1. View your blog:', `https://www.ao.link/#/entity/${deployResult.processId}`);
+    console.log(
+      '1. View your blog:',
+      `https://www.ao.link/#/entity/${deployResult.processId}`
+    );
     console.log('2. Use the SDK to interact with your blog:');
     console.log(`
    import { InkwellBlogSDK } from 'inkwell-sdk';
@@ -201,7 +233,6 @@ Created at: ${new Date().toISOString()}`,
      }
    });
     `);
-
   } catch (error) {
     console.error('\n❌ Deployment failed:', error);
     process.exit(1);
@@ -211,4 +242,4 @@ Created at: ${new Date().toISOString()}`,
 // Run the deployment script
 if (require.main === module) {
   main();
-} 
+}
