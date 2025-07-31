@@ -10,7 +10,8 @@ import {
 async function basicUsage() {
   // Initialize the SDK with your process ID
   const blogSDK = new InkwellBlogSDK({
-    processId: 'your-process-id-here',
+    // processId: 'your-process-id-here',
+    processId: '7ZjOeV4ruQF3G5d1ikiioh9UX3A41IUU_hQnNGX_usE',
   });
 
   try {
@@ -76,7 +77,8 @@ async function basicUsage() {
 // Example: Creating a new post (requires Editor role)
 async function createPostExample() {
   const blogSDK = new InkwellBlogSDK({
-    processId: 'your-process-id-here',
+    // processId: 'your-process-id-here',
+    processId: '7ZjOeV4ruQF3G5d1ikiioh9UX3A41IUU_hQnNGX_usE',
   });
 
   const newPostData: CreatePostData = {
@@ -108,7 +110,8 @@ async function createPostExample() {
 // Example: Admin operations (requires Admin role)
 async function adminOperationsExample() {
   const blogSDK = new InkwellBlogSDK({
-    processId: 'your-process-id-here',
+    // processId: 'your-process-id-here',
+    processId: '7ZjOeV4ruQF3G5d1ikiioh9UX3A41IUU_hQnNGX_usE',
   });
 
   try {
@@ -137,7 +140,8 @@ async function adminOperationsExample() {
     // Add a new editor
     console.log('\nAdding new editor...');
     const addEditorResponse = await blogSDK.addEditors({
-      accounts: ['new-editor-address'],
+      //   accounts: ['new-editor-address'],
+      accounts: ['E_pOZW6MDRtcTraQlIEM0p4l_AedIadAO9j-RzuPol8'],
     });
 
     if (addEditorResponse.success) {
@@ -166,5 +170,13 @@ if (require.main === module) {
 
   basicUsage()
     .then(() => console.log('\nBasic usage completed'))
+    .catch(console.error);
+
+  createPostExample()
+    .then(() => console.log('\nCreate post example completed'))
+    .catch(console.error);
+
+  adminOperationsExample()
+    .then(() => console.log('\nAdmin operations example completed'))
     .catch(console.error);
 }

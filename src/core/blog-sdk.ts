@@ -85,7 +85,7 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   async getInfo(): Promise<ApiResponse<BlogInfo>> {
     try {
-      const result = await this.aoconnect.dryRun({
+      const result = await this.aoconnect.dryrun({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Info' }],
       });
@@ -112,7 +112,7 @@ export class InkwellBlogSDK implements BlogSDK {
         tags.push({ name: 'Ordered', value: options.ordered.toString() });
       }
 
-      const result = await this.aoconnect.dryRun({
+      const result = await this.aoconnect.dryrun({
         process: this.processId,
         tags,
       });
@@ -133,7 +133,7 @@ export class InkwellBlogSDK implements BlogSDK {
     try {
       validatePostId(options.id);
 
-      const result = await this.aoconnect.dryRun({
+      const result = await this.aoconnect.dryrun({
         process: this.processId,
         tags: [
           { name: 'Action', value: 'Get-Post' },
@@ -155,7 +155,7 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   async getUserRoles(): Promise<ApiResponse<string[]>> {
     try {
-      const result = await this.aoconnect.dryRun({
+      const result = await this.aoconnect.dryrun({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Get-User-Roles' }],
       });
@@ -342,7 +342,7 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   async getEditors(): Promise<ApiResponse<string[]>> {
     try {
-      const result = await this.aoconnect.dryRun({
+      const result = await this.aoconnect.dryrun({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Get-Editors' }],
       });
@@ -361,7 +361,7 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   async getAdmins(): Promise<ApiResponse<string[]>> {
     try {
-      const result = await this.aoconnect.dryRun({
+      const result = await this.aoconnect.dryrun({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Get-Admins' }],
       });

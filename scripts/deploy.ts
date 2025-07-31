@@ -42,7 +42,7 @@ async function main() {
         fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
         console.log(`💾 Wallet saved to ${walletPath}`);
       } catch (saveError) {
-        console.warn('⚠️  Could not save wallet to file:', saveError.message);
+        console.warn('⚠️  Could not save wallet to file:', saveError instanceof Error ? saveError.message : String(saveError));
       }
     }
 

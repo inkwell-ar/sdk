@@ -11,6 +11,7 @@ build/
 
 # Deployment artifacts
 deployment-*.json
+deployment-*.txt
 wallet.json
 
 # Environment variables

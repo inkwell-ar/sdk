@@ -10,7 +10,7 @@
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
-    "deploy": "ts-node scripts/deploy.ts",
+    "deploy-blog": "ts-node scripts/deploy.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
