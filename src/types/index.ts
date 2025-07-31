@@ -11,6 +11,18 @@ export interface BlogPost {
   authors: string[];
 }
 
+export interface BlogDetails {
+  title: string;
+  description: string;
+  logo: string;
+}
+
+export interface UpdateBlogDetailsData {
+  title?: string;
+  description?: string;
+  logo?: string;
+}
+
 export interface CreatePostData {
   title: string;
   description: string;
@@ -65,6 +77,46 @@ export interface BlogSDKConfig {
   aoconnect?: any; // aoconnect instance
 }
 
+export interface DeployConfig {
+  name?: string;
+  wallet?: string | any;
+  contractPath?: string;
+  tags?: Array<{ name: string; value: string }>;
+  retry?: {
+    count: number;
+    delay: number;
+  };
+  luaPath?: string;
+  minify?: boolean;
+  contractTransformer?: (source: string) => string;
+  onBoot?: boolean;
+  silent?: boolean;
+  blueprints?: string[];
+  forceSpawn?: boolean;
+}
+
+export interface DeployResult {
+  processId: string;
+  messageId?: string;
+}
+
+export interface DeployOptions {
+  name?: string;
+  wallet?: string | any;
+  tags?: Array<{ name: string; value: string }>;
+  retry?: {
+    count: number;
+    delay: number;
+  };
+  luaPath?: string;
+  minify?: boolean;
+  contractTransformer?: (source: string) => string;
+  onBoot?: boolean;
+  silent?: boolean;
+  blueprints?: string[];
+  forceSpawn?: boolean;
+}
+
 export interface BlogSDK {
   // Public methods
   getAllPosts(options?: GetPostsOptions): Promise<ApiResponse<BlogPost[]>>;
@@ -83,4 +135,5 @@ export interface BlogSDK {
   removeAdmins(options: RoleManagementOptions): Promise<ApiResponse<RoleUpdateResult[]>>;
   getEditors(): Promise<ApiResponse<string[]>>;
   getAdmins(): Promise<ApiResponse<string[]>>;
+  setBlogDetails(options: { data: UpdateBlogDetailsData }): Promise<ApiResponse<BlogDetails>>;
 } 

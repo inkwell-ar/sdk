@@ -7,6 +7,8 @@ A TypeScript SDK for interacting with the Inkwell Blog CRUD AO process using aoc
 - 🔐 **Role-based Access Control**: Support for Editor and Admin roles
 - 📝 **Full CRUD Operations**: Create, read, update, and delete blog posts
 - 👥 **User Management**: Add/remove editors and admins
+- 🎨 **Blog Customization**: Set blog title, description, and logo
+- 🚀 **Easy Deployment**: Deploy your own blog process with one command
 - ✅ **Type Safety**: Full TypeScript support with comprehensive type definitions
 - 🛡️ **Input Validation**: Built-in validation for all inputs
 - 🔄 **Error Handling**: Comprehensive error handling and response parsing
@@ -169,6 +171,19 @@ Get all current admins.
 const response = await blogSDK.getAdmins();
 ```
 
+#### `setBlogDetails(options)`
+Set blog details (title, description, logo). Admin role required.
+
+```typescript
+const response = await blogSDK.setBlogDetails({
+  data: {
+    title: 'My Blog Title',
+    description: 'My blog description',
+    logo: 'https://example.com/logo.png'
+  }
+});
+```
+
 ## Data Types
 
 ### BlogPost
@@ -206,6 +221,75 @@ interface CreatePostData {
 }
 ```
 
+### BlogDetails
+```typescript
+interface BlogDetails {
+  title: string;
+  description: string;
+  logo: string;
+}
+```
+
+### UpdateBlogDetailsData
+```typescript
+interface UpdateBlogDetailsData {
+  title?: string;
+  description?: string;
+  logo?: string;
+}
+```
+
+## Deployment
+
+The SDK includes built-in deployment functionality using [ao-deploy](https://github.com/pawanpaudel93/ao-deploy).
+
+### Deploy a New Blog Process
+
+```typescript
+import { InkwellBlogSDK } from 'inkwell-blog-sdk';
+
+// Deploy a new blog process
+const deployResult = await InkwellBlogSDK.deploy({
+  name: 'my-blog',
+  wallet: yourWallet,
+  contractPath: './lua-process/inkwell_blog.lua',
+  luaPath: './lua-process/?.lua',
+  tags: [
+    { name: 'Blog-Name', value: 'My Personal Blog' },
+    { name: 'Author', value: '@myhandle' }
+  ],
+  minify: true
+});
+
+console.log('Process ID:', deployResult.processId);
+console.log('View at:', `https://www.ao.link/#/entity/${deployResult.processId}`);
+
+// Initialize SDK with the new process
+const blogSDK = new InkwellBlogSDK({
+  processId: deployResult.processId,
+  wallet: yourWallet
+});
+```
+
+### Deployment Options
+
+```typescript
+interface DeployOptions {
+  name?: string;                    // Process name (default: 'inkwell-blog')
+  wallet?: string | any;            // Arweave wallet
+  contractPath?: string;            // Path to process file
+  luaPath?: string;                 // Path to Lua modules
+  tags?: Array<{ name: string; value: string }>; // Custom tags
+  retry?: { count: number; delay: number }; // Retry configuration
+  minify?: boolean;                 // Minify contract (default: true)
+  contractTransformer?: (source: string) => string; // Custom source transformer
+  onBoot?: boolean;                 // Load on boot (default: false)
+  silent?: boolean;                 // Disable logging (default: false)
+  blueprints?: string[];            // Blueprints to use
+  forceSpawn?: boolean;             // Force new process (default: false)
+}
+```
+
 ## Examples
 
 ### Basic Usage
@@ -236,6 +320,15 @@ const wallet = await arweave.wallets.generate(); // Or load existing wallet
 const blogSDK = new InkwellBlogSDK({
   processId: 'your-process-id',
   wallet: wallet
+});
+
+// Set blog details (requires Admin role)
+const blogDetailsResponse = await blogSDK.setBlogDetails({
+  data: {
+    title: 'My Personal Blog',
+    description: 'A blog about technology and life',
+    logo: 'https://example.com/logo.png'
+  }
 });
 
 // Create a new post (requires Editor role)

@@ -6,15 +6,19 @@ export type {
   BlogSDKConfig,
   ApiResponse,
   BlogPost,
+  BlogDetails,
   CreatePostData,
   UpdatePostData,
+  UpdateBlogDetailsData,
   GetPostsOptions,
   GetPostOptions,
   CreatePostOptions,
   UpdatePostOptions,
   DeletePostOptions,
   RoleManagementOptions,
-  RoleUpdateResult
+  RoleUpdateResult,
+  DeployOptions,
+  DeployResult
 } from './types';
 export { ValidationError } from './utils/validation';
 

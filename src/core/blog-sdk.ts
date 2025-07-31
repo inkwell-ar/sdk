@@ -1,24 +1,30 @@
 import { connect } from '@permaweb/aoconnect';
+import { deployContract } from 'ao-deploy';
 import {
   BlogSDK,
   BlogSDKConfig,
   ApiResponse,
   BlogPost,
+  BlogDetails,
   CreatePostData,
   UpdatePostData,
+  UpdateBlogDetailsData,
   GetPostsOptions,
   GetPostOptions,
   CreatePostOptions,
   UpdatePostOptions,
   DeletePostOptions,
   RoleManagementOptions,
-  RoleUpdateResult
+  RoleUpdateResult,
+  DeployOptions,
+  DeployResult
 } from '../types';
 import {
   validateCreatePostData,
   validateUpdatePostData,
   validatePostId,
   validateRoleManagementOptions,
+  validateBlogDetailsData,
   validateSDKConfig,
   ValidationError
 } from '../utils/validation';
@@ -31,6 +37,44 @@ export class InkwellBlogSDK implements BlogSDK {
     validateSDKConfig(config);
     this.processId = config.processId;
     this.aoconnect = config.aoconnect || connect();
+  }
+
+  /**
+   * Deploy a new Inkwell Blog process
+   */
+  static async deploy(options: DeployOptions = {}): Promise<DeployResult> {
+    try {
+      const defaultOptions = {
+        name: options.name || 'inkwell-blog',
+        contractPath: options.contractPath || './lua-process/inkwell_blog.lua',
+        luaPath: options.luaPath || './lua-process/?.lua',
+        tags: [
+          { name: 'App-Name', value: 'Inkwell-Blog' },
+          { name: 'App-Version', value: '1.0.0' },
+          ...(options.tags || [])
+        ],
+        retry: {
+          count: options.retry?.count || 10,
+          delay: options.retry?.delay || 3000
+        },
+        minify: options.minify !== false,
+        onBoot: options.onBoot || false,
+        silent: options.silent || false,
+        forceSpawn: options.forceSpawn || false
+      };
+
+      const result = await deployContract({
+        ...defaultOptions,
+        wallet: options.wallet
+      });
+
+      return {
+        processId: result.processId,
+        messageId: result.messageId
+      };
+    } catch (error) {
+      throw new Error(`Failed to deploy Inkwell Blog process: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   /**
@@ -306,6 +350,30 @@ export class InkwellBlogSDK implements BlogSDK {
         tags: [
           { name: 'Action', value: 'Get-Admins' }
         ]
+      });
+
+      return this.parseResponse(result);
+    } catch (error) {
+      return {
+        success: false,
+        data: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Set blog details (Admin role required)
+   */
+  async setBlogDetails(options: { data: UpdateBlogDetailsData }): Promise<ApiResponse<BlogDetails>> {
+    try {
+      validateBlogDetailsData(options.data);
+
+      const result = await this.aoconnect.message({
+        process: this.processId,
+        tags: [
+          { name: 'Action', value: 'Set-Blog-Details' }
+        ],
+        data: JSON.stringify(options.data)
       });
 
       return this.parseResponse(result);

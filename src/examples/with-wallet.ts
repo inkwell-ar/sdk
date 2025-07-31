@@ -110,6 +110,25 @@ async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK) {
       console.log(`Admins: ${adminsResponse.data.join(', ')}`);
     }
 
+    // Set blog details
+    console.log('\n=== Setting Blog Details ===');
+    const blogDetailsResponse = await blogSDK.setBlogDetails({
+      data: {
+        title: 'My Authenticated Blog',
+        description: 'A blog managed with wallet authentication',
+        logo: 'https://example.com/authenticated-logo.png'
+      }
+    });
+
+    if (blogDetailsResponse.success) {
+      console.log('✅ Blog details updated successfully!');
+      console.log(`   Title: ${blogDetailsResponse.data.title}`);
+      console.log(`   Description: ${blogDetailsResponse.data.description}`);
+      console.log(`   Logo: ${blogDetailsResponse.data.logo}`);
+    } else {
+      console.error('❌ Failed to update blog details:', blogDetailsResponse.data);
+    }
+
     // Example: Add a new editor (replace with actual address)
     const newEditorAddress = 'new-editor-address-here';
     console.log(`\nAdding new editor: ${newEditorAddress}`);

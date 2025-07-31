@@ -1,10 +1,15 @@
-import { InkwellBlogSDK, ValidationError } from '../index';
+import { InkwellBlogSDK, ValidationError, BlogDetails } from '../index';
 
 // Mock aoconnect for testing
 const mockAoconnect = {
   dryRun: jest.fn(),
   message: jest.fn()
 };
+
+// Mock ao-deploy
+jest.mock('ao-deploy', () => ({
+  deployContract: jest.fn()
+}));
 
 describe('InkwellBlogSDK', () => {
   let blogSDK: InkwellBlogSDK;
@@ -28,6 +33,43 @@ describe('InkwellBlogSDK', () => {
       expect(() => {
         new InkwellBlogSDK({} as any);
       }).toThrow(ValidationError);
+    });
+  });
+
+  describe('Deployment', () => {
+    it('should deploy a new blog process', async () => {
+      const mockDeployResult = {
+        processId: 'test-process-id',
+        messageId: 'test-message-id'
+      };
+
+      const { deployContract } = require('ao-deploy');
+      deployContract.mockResolvedValue(mockDeployResult);
+
+      const result = await InkwellBlogSDK.deploy({
+        name: 'test-blog',
+        contractPath: './test.lua'
+      });
+
+      expect(result.processId).toBe('test-process-id');
+      expect(result.messageId).toBe('test-message-id');
+      expect(deployContract).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'test-blog',
+          contractPath: './test.lua',
+          tags: expect.arrayContaining([
+            { name: 'App-Name', value: 'Inkwell-Blog' },
+            { name: 'App-Version', value: '1.0.0' }
+          ])
+        })
+      );
+    });
+
+    it('should handle deployment errors', async () => {
+      const { deployContract } = require('ao-deploy');
+      deployContract.mockRejectedValue(new Error('Deployment failed'));
+
+      await expect(InkwellBlogSDK.deploy({})).rejects.toThrow('Failed to deploy Inkwell Blog process: Deployment failed');
     });
   });
 
@@ -226,6 +268,45 @@ describe('InkwellBlogSDK', () => {
       expect(result.success).toBe(true);
       expect(result.data).toContain('editor1');
       expect(result.data).toContain('editor2');
+    });
+
+    it('should set blog details', async () => {
+      const mockResponse = {
+        Messages: [{
+          Data: JSON.stringify({
+            success: true,
+            data: {
+              title: 'My Blog',
+              description: 'A test blog',
+              logo: 'https://example.com/logo.png'
+            }
+          })
+        }]
+      };
+
+      mockAoconnect.message.mockResolvedValue(mockResponse);
+
+      const blogDetails = {
+        title: 'My Blog',
+        description: 'A test blog',
+        logo: 'https://example.com/logo.png'
+      };
+
+      const result = await blogSDK.setBlogDetails({
+        data: blogDetails
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data.title).toBe('My Blog');
+      expect(result.data.description).toBe('A test blog');
+      expect(result.data.logo).toBe('https://example.com/logo.png');
+      expect(mockAoconnect.message).toHaveBeenCalledWith({
+        process: 'test-process-id',
+        tags: [
+          { name: 'Action', value: 'Set-Blog-Details' }
+        ],
+        data: JSON.stringify(blogDetails)
+      });
     });
   });
 

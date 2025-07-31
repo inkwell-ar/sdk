@@ -1,4 +1,4 @@
-import { CreatePostData, UpdatePostData, RoleManagementOptions } from '../types';
+import { CreatePostData, UpdatePostData, RoleManagementOptions, UpdateBlogDetailsData } from '../types';
 
 export class ValidationError extends Error {
   constructor(message: string) {
@@ -81,6 +81,31 @@ export function validateRoleManagementOptions(options: RoleManagementOptions): v
     if (!account || typeof account !== 'string' || account.trim() === '') {
       throw new ValidationError('All accounts must be non-empty strings');
     }
+  }
+}
+
+export function validateBlogDetailsData(data: UpdateBlogDetailsData): void {
+  if (!data || typeof data !== 'object') {
+    throw new ValidationError('Data is required and must be an object');
+  }
+
+  if (data.title !== undefined && (typeof data.title !== 'string' || data.title.trim() === '')) {
+    throw new ValidationError('Field title must be a non-empty string if provided');
+  }
+
+  if (data.description !== undefined && (typeof data.description !== 'string' || data.description.trim() === '')) {
+    throw new ValidationError('Field description must be a non-empty string if provided');
+  }
+
+  if (data.logo !== undefined && typeof data.logo !== 'string') {
+    throw new ValidationError('Field logo must be a string if provided');
+  }
+
+  // Check if at least one field is provided
+  if ((!data.title || data.title.trim() === '') && 
+      (!data.description || data.description.trim() === '') && 
+      (!data.logo || data.logo.trim() === '')) {
+    throw new ValidationError('At least one field (title, description, or logo) is required');
   }
 }
 
