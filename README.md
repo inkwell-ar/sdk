@@ -16,19 +16,19 @@ A TypeScript SDK for interacting with the Inkwell Blog CRUD AO process using aoc
 ## Installation
 
 ```bash
-npm install inkwell-sdk
+npm install @inkwell.ar/sdk
 ```
 
 Or using yarn:
 
 ```bash
-yarn add inkwell-sdk
+yarn add @inkwell.ar/sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { InkwellBlogSDK } from 'inkwell-sdk';
+import { InkwellBlogSDK } from '@inkwell.ar/sdk';
 
 // Initialize the SDK
 const blogSDK = new InkwellBlogSDK({
@@ -47,7 +47,7 @@ if (response.success) {
 ### Initialization
 
 ```typescript
-import { InkwellBlogSDK } from 'inkwell-blog-sdk';
+import { InkwellBlogSDK } from '@inkwell.ar/sdk';
 
 const blogSDK = new InkwellBlogSDK({
   processId: string,        // Required: Your AO process ID
@@ -272,7 +272,7 @@ The SDK includes built-in deployment functionality using [ao-deploy](https://git
 ### Deploy a New Blog Process
 
 ```typescript
-import { InkwellBlogSDK } from 'inkwell-sdk';
+import { InkwellBlogSDK } from '@inkwell.ar/sdk';
 
 // Deploy a new blog process
 const deployResult = await InkwellBlogSDK.deploy({
@@ -320,7 +320,7 @@ interface DeployOptions {
 
 ### Basic Usage
 ```typescript
-import { InkwellBlogSDK } from 'inkwell-sdk';
+import { InkwellBlogSDK } from '@inkwell.ar/sdk';
 
 const blogSDK = new InkwellBlogSDK({
   processId: 'your-process-id'
@@ -346,7 +346,7 @@ if (postsResponse.success) {
 
 ### With Wallet Authentication
 ```typescript
-import { InkwellBlogSDK } from 'inkwell-sdk';
+import { InkwellBlogSDK } from '@inkwell.ar/sdk';
 import Arweave from 'arweave';
 
 const arweave = Arweave.init();

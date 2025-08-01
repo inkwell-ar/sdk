@@ -1,5 +1,5 @@
 {
-  "name": "inkwell-sdk",
+  "name": "@inkwell.ar/sdk",
   "version": "0.0.1",
   "description": "SDK for interacting with the Inkwell Blog CRUD AO process",
   "main": "dist/index.js",
