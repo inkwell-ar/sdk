@@ -85,7 +85,7 @@ async function main() {
       luaPath: './lua-process/?.lua',
       tags: [
         { name: 'Blog-Name', value: blogName },
-        { name: 'Deployed-By', value: 'Inkwell-SDK' },
+        { name: 'Deployed-By', value: '@inkwell.ar/sdk' },
         { name: 'Deployment-Date', value: new Date().toISOString() },
       ],
       retry: {
@@ -120,7 +120,7 @@ async function main() {
     const blogDetailsResponse = await blogSDK.setBlogDetails({
       data: {
         title: `${blogName.charAt(0).toUpperCase() + blogName.slice(1)}`,
-        description: 'A blog powered by Inkwell Blog SDK',
+        description: 'A blog powered by @inkwell.ar/sdk',
         logo: '',
       },
     });
@@ -139,10 +139,10 @@ async function main() {
     const createPostResponse = await blogSDK.createPost({
       data: {
         title: 'Welcome to My Blog!',
-        description: 'This is my first blog post created with Inkwell Blog SDK',
+        description: 'This is my first blog post created with @inkwell.ar/sdk',
         body: `# Welcome to My Blog!
 
-This is your first blog post created with the Inkwell Blog SDK.
+This is your first blog post created with the @inkwell.ar/sdk.
 
 ## Features
 - **Decentralized**: Built on Arweave and AO
@@ -207,7 +207,7 @@ Created at: ${new Date().toISOString()}`,
     );
     console.log('2. Use the SDK to interact with your blog:');
     console.log(`
-   import { InkwellBlogSDK } from 'inkwell-sdk';
+   import { InkwellBlogSDK } from '@inkwell.ar/sdk';
    
    const blogSDK = new InkwellBlogSDK({
      processId: '${deployResult.processId}',

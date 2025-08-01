@@ -135,7 +135,7 @@ async function deployAndUseBlog() {
         description: 'This is my first blog post using Inkwell Blog',
         body: `# Welcome to My Blog!
 
-This is my first blog post created with the Inkwell Blog SDK.
+This is my first blog post created with the @inkwell.ar/sdk.
 
 ## Features
 - **Easy Deployment**: Deployed with just a few lines of code
@@ -144,7 +144,7 @@ This is my first blog post created with the Inkwell Blog SDK.
 - **Customizable**: Set your own blog details
 
 ## Getting Started
-The Inkwell Blog SDK makes it easy to create and manage your own blog on the Arweave network.
+The @inkwell.ar/sdk makes it easy to create and manage your own blog on the Arweave network.
 
 Created at: ${new Date().toISOString()}`,
         published_at: Date.now(),
@@ -286,7 +286,7 @@ async function deployMultipleBlogs() {
 
 // Run examples
 if (require.main === module) {
-  console.log('=== Inkwell Blog SDK - Deployment Examples ===\n');
+  console.log('=== @inkwell.ar/sdk - Deployment Examples ===\n');
 
   deployAndUseBlog()
     .then(() => {

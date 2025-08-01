@@ -98,7 +98,7 @@ async function createPostWithWallet(blogSDK: InkwellBlogSDK) {
     description: 'This post was created using wallet authentication',
     body: `# Authenticated Post
 
-This is a blog post created with wallet authentication using the Inkwell SDK.
+This is a blog post created with wallet authentication using the @inkwell.ar/sdk.
 
 ## Features
 - Created with authenticated wallet
@@ -264,7 +264,7 @@ async function errorHandlingExample() {
 
 // Run examples
 if (require.main === module) {
-  console.log('=== Inkwell Blog SDK - Authenticated Examples ===\n');
+  console.log('=== @inkwell.ar/sdk - Authenticated Examples ===\n');
 
   authenticatedUsage()
     .then(() => {

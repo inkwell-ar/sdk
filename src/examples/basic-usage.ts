@@ -6,7 +6,7 @@ import {
   RoleUpdateResult,
 } from '../index';
 
-// Example: Basic usage of the Inkwell Blog SDK
+// Example: Basic usage of the @inkwell.ar/sdk
 async function basicUsage() {
   // Initialize the SDK with your process ID
   const blogSDK = new InkwellBlogSDK({
@@ -83,7 +83,7 @@ async function createPostExample() {
 
   const newPostData: CreatePostData = {
     title: 'My First Blog Post',
-    description: 'This is a sample blog post created using the Inkwell SDK',
+    description: 'This is a sample blog post created using the @inkwell.ar/sdk',
     body: 'This is the full content of the blog post. You can write markdown or plain text here.',
     published_at: Date.now(),
     last_update: Date.now(),
@@ -166,7 +166,7 @@ async function adminOperationsExample() {
 
 // Run examples
 if (require.main === module) {
-  console.log('=== Inkwell Blog SDK Examples ===\n');
+  console.log('=== @inkwell.ar/sdk Examples ===\n');
 
   basicUsage()
     .then(() => console.log('\nBasic usage completed'))

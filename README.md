@@ -1,6 +1,6 @@
-# Inkwell Blog SDK
+# @inkwell.ar/sdk
 
-A TypeScript SDK for interacting with the Inkwell Blog CRUD AO process using aoconnect.
+A TypeScript SDK for interacting with the Inkwell Blog CRUD AO process using aoconnect. Published as `@inkwell.ar/sdk`.
 
 ## Features
 
