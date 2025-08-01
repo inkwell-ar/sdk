@@ -56,6 +56,8 @@ const blogSDK = new InkwellBlogSDK({
 });
 ```
 
+**Browser Wallet Support**: In browser environments, if no wallet is provided, the SDK will automatically use `globalThis.arweaveWallet` if available.
+
 ### Public Methods (No Authentication Required)
 
 #### `getInfo()`
@@ -106,7 +108,8 @@ const response = await blogSDK.createPost({
     last_update: Date.now(),
     labels: ['tag1', 'tag2'],
     authors: ['@author1', '@author2']
-  }
+  },
+  wallet: yourWallet // Optional: will use browser wallet if not provided
 });
 ```
 
@@ -120,7 +123,8 @@ const response = await blogSDK.updatePost({
     title: 'Updated Title',
     description: 'Updated description',
     // ... other fields
-  }
+  },
+  wallet: yourWallet // Optional: will use browser wallet if not provided
 });
 ```
 
@@ -129,7 +133,8 @@ Delete a blog post.
 
 ```typescript
 const response = await blogSDK.deletePost({ 
-  id: 1 
+  id: 1,
+  wallet: yourWallet // Optional: will use browser wallet if not provided
 });
 ```
 
@@ -140,7 +145,8 @@ Add new editors to the blog.
 
 ```typescript
 const response = await blogSDK.addEditors({
-  accounts: ['editor-address-1', 'editor-address-2']
+  accounts: ['editor-address-1', 'editor-address-2'],
+  wallet: yourWallet // Optional: will use browser wallet if not provided
 });
 ```
 
@@ -149,7 +155,8 @@ Remove editors from the blog.
 
 ```typescript
 const response = await blogSDK.removeEditors({
-  accounts: ['editor-address-to-remove']
+  accounts: ['editor-address-to-remove'],
+  wallet: yourWallet // Optional: will use browser wallet if not provided
 });
 ```
 
@@ -158,7 +165,8 @@ Add new admins to the blog.
 
 ```typescript
 const response = await blogSDK.addAdmins({
-  accounts: ['admin-address-1', 'admin-address-2']
+  accounts: ['admin-address-1', 'admin-address-2'],
+  wallet: yourWallet // Optional: will use browser wallet if not provided
 });
 ```
 
@@ -167,7 +175,8 @@ Remove admins from the blog.
 
 ```typescript
 const response = await blogSDK.removeAdmins({
-  accounts: ['admin-address-to-remove']
+  accounts: ['admin-address-to-remove'],
+  wallet: yourWallet // Optional: will use browser wallet if not provided
 });
 ```
 
@@ -194,7 +203,8 @@ const response = await blogSDK.setBlogDetails({
     title: 'My Blog Title',
     description: 'My blog description',
     logo: 'https://example.com/logo.png'
-  }
+  },
+  wallet: yourWallet // Optional: will use browser wallet if not provided
 });
 ```
 
@@ -218,7 +228,7 @@ interface BlogPost {
 ```typescript
 interface ApiResponse<T = any> {
   success: boolean;
-  data: T;
+  data: T | string; // T for successful operations, string for error messages
 }
 ```
 
@@ -384,7 +394,8 @@ const blogDetailsResponse = await blogSDK.setBlogDetails({
     title: 'My Personal Blog',
     description: 'A blog about technology and life',
     logo: 'https://example.com/logo.png'
-  }
+  },
+  wallet: wallet
 });
 
 // Create a new post (requires Editor role)
@@ -396,7 +407,8 @@ const createResponse = await blogSDK.createPost({
     published_at: Date.now(),
     last_update: Date.now(),
     authors: ['@myhandle']
-  }
+  },
+  wallet: wallet
 });
 ```
 
@@ -404,7 +416,8 @@ const createResponse = await blogSDK.createPost({
 ```typescript
 try {
   const response = await blogSDK.createPost({
-    data: invalidData
+    data: invalidData,
+    wallet: wallet
   });
   
   if (!response.success) {
@@ -417,6 +430,7 @@ try {
 
 ## Wallet Management
 
+### Node.js Environment
 The SDK examples automatically handle wallet management:
 
 - **Default wallet file**: `wallet.json` in the project root
@@ -425,6 +439,26 @@ The SDK examples automatically handle wallet management:
 - **Error handling**: Falls back to generating a new wallet if file operations fail
 
 **⚠️ Security Note**: The `wallet.json` file contains your private keys. Keep it secure and never commit it to version control.
+
+### Browser Environment
+In browser environments, the SDK supports automatic browser wallet detection:
+
+```typescript
+// No wallet needed - SDK will use browser wallet automatically
+const response = await blogSDK.createPost({
+  data: {
+    title: 'My Post',
+    description: 'Post description',
+    body: 'Post content...',
+    published_at: Date.now(),
+    last_update: Date.now(),
+    authors: ['@myhandle']
+  }
+  // wallet parameter is optional in browser
+});
+```
+
+**Browser Wallet Support**: The SDK automatically detects and uses `globalThis.arweaveWallet` if available, making wallet management seamless in browser applications.
 
 ## Role System
 
@@ -450,6 +484,55 @@ if (rolesResponse.success) {
 }
 ```
 
+## Message Result Retrieval
+
+The SDK automatically attempts to retrieve the actual result of message operations:
+
+1. **Message Sent**: First, the message is sent to the AO process
+2. **Result Retrieval**: The SDK then attempts to get the result using the message ID
+3. **Fallback**: If result retrieval fails, a success message with the message ID is returned
+
+This provides the best of both worlds:
+- **Immediate feedback**: You know the message was sent successfully
+- **Actual data**: When possible, you get the parsed result from the process
+- **Graceful degradation**: If result retrieval fails, you still get confirmation
+
+### Return Types
+
+Write operations can return either the actual data or a success message:
+
+```typescript
+// createPost and updatePost can return:
+type CreatePostResponse = ApiResponse<BlogPost | string>;
+
+// addEditors, removeEditors, addAdmins, removeAdmins can return:
+type RoleResponse = ApiResponse<RoleUpdateResult[] | string>;
+
+// setBlogDetails can return:
+type BlogDetailsResponse = ApiResponse<BlogDetails | string>;
+
+// deletePost always returns:
+type DeleteResponse = ApiResponse<string>;
+```
+
+### Handling Dual Return Types
+
+```typescript
+const response = await blogSDK.createPost({ data: postData });
+
+if (response.success) {
+  if (typeof response.data === 'object' && response.data !== null) {
+    // Got the actual post data
+    const post = response.data as BlogPost;
+    console.log(`Post ID: ${post.id}`);
+    console.log(`Title: ${post.title}`);
+  } else {
+    // Got a success message
+    console.log(`Message: ${response.data}`);
+  }
+}
+```
+
 ## Error Handling
 
 The SDK provides comprehensive error handling:
@@ -458,6 +541,7 @@ The SDK provides comprehensive error handling:
 2. **Permission Errors**: Insufficient role permissions
 3. **Network Errors**: Connection issues with AO
 4. **Process Errors**: Errors from the AO process itself
+5. **Wallet Errors**: Missing or invalid wallet configuration
 
 All methods return an `ApiResponse` object with:
 - `success`: Boolean indicating if the operation succeeded

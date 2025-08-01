@@ -1,4 +1,4 @@
-import { connect, createDataItemSigner } from '@permaweb/aoconnect';
+import { connect, createDataItemSigner, result } from '@permaweb/aoconnect';
 import { deployContract } from 'ao-deploy';
 import {
   BlogSDK,
@@ -38,6 +38,44 @@ export class InkwellBlogSDK implements BlogSDK {
     validateSDKConfig(config);
     this.processId = config.processId;
     this.aoconnect = config.aoconnect || connect({ MODE: 'legacy' });
+  }
+
+  /**
+   * Get the appropriate signer for the wallet
+   */
+  private getSigner(wallet?: any) {
+    if (wallet) {
+      return createDataItemSigner(wallet);
+    }
+
+    // Check for browser wallet
+    if (
+      typeof globalThis !== 'undefined' &&
+      (globalThis as any).arweaveWallet
+    ) {
+      return createDataItemSigner((globalThis as any).arweaveWallet);
+    }
+
+    throw new Error(
+      'No wallet provided and no browser wallet available. Please provide a wallet or connect a browser wallet.'
+    );
+  }
+
+  /**
+   * Get the result of a message using its message ID
+   */
+  private async getMessageResult(messageId: string): Promise<any> {
+    try {
+      const resultData = await result({
+        message: messageId,
+        process: this.processId,
+      });
+      return resultData;
+    } catch (error) {
+      throw new Error(
+        `Failed to get message result: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
   }
 
   /**
@@ -117,7 +155,7 @@ export class InkwellBlogSDK implements BlogSDK {
         tags,
       });
 
-      return this.parseResponse(result);
+      return this.parseDryrunResponse(result);
     } catch (error) {
       return {
         success: false,
@@ -141,7 +179,7 @@ export class InkwellBlogSDK implements BlogSDK {
         ],
       });
 
-      return this.parseResponse(result);
+      return this.parseDryrunResponse(result);
     } catch (error) {
       return {
         success: false,
@@ -163,7 +201,7 @@ export class InkwellBlogSDK implements BlogSDK {
         ],
       });
 
-      return this.parseResponse(result);
+      return this.parseMessageResponse(result);
     } catch (error) {
       return {
         success: false,
@@ -176,27 +214,36 @@ export class InkwellBlogSDK implements BlogSDK {
    * Create a new post (Editor role required)
    */
   async createPost(
-    options: CreatePostOptions & { wallet: any }
-  ): Promise<ApiResponse<BlogPost>> {
+    options: CreatePostOptions
+  ): Promise<ApiResponse<BlogPost | string>> {
     try {
       validateCreatePostData(options.data);
 
-      const result = await this.aoconnect.message({
+      const messageId = await this.aoconnect.message({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Create-Post' }],
         data: JSON.stringify(options.data),
-        signer: createDataItemSigner(options.wallet),
+        signer: this.getSigner(options.wallet),
       });
-      if (!result) {
+
+      if (!messageId) {
         return {
           success: false,
           data: 'Create-Post message failed',
         };
       }
-      return {
-        success: true,
-        data: options.data as BlogPost,
-      };
+
+      // Try to get the result of the message
+      try {
+        const resultData = await this.getMessageResult(messageId);
+        return this.parseMessageResponse(resultData);
+      } catch (resultError) {
+        // If we can't get the result, return a success message with the message ID
+        return {
+          success: true,
+          data: `Post created successfully. Message ID: ${messageId}`,
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -209,32 +256,39 @@ export class InkwellBlogSDK implements BlogSDK {
    * Update an existing post (Editor role required)
    */
   async updatePost(
-    options: UpdatePostOptions & { wallet: any }
-  ): Promise<ApiResponse<BlogPost>> {
+    options: UpdatePostOptions
+  ): Promise<ApiResponse<BlogPost | string>> {
     try {
       validatePostId(options.id);
       validateUpdatePostData(options.data);
 
-      const result = await this.aoconnect.message({
+      const messageId = await this.aoconnect.message({
         process: this.processId,
         tags: [
           { name: 'Action', value: 'Update-Post' },
           { name: 'Id', value: options.id.toString() },
         ],
         data: JSON.stringify(options.data),
-        signer: createDataItemSigner(options.wallet),
+        signer: this.getSigner(options.wallet),
       });
 
-      if (!result) {
+      if (!messageId) {
         return {
           success: false,
           data: 'Update-Post message failed',
         };
       }
-      return {
-        success: true,
-        data: options.data as BlogPost,
-      };
+
+      // Try to get the result of the message
+      try {
+        const resultData = await this.getMessageResult(messageId);
+        return this.parseMessageResponse(resultData);
+      } catch (resultError) {
+        return {
+          success: true,
+          data: `Post updated successfully. Message ID: ${messageId}`,
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -246,31 +300,36 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Delete a post (Editor role required)
    */
-  async deletePost(
-    options: DeletePostOptions & { wallet: any }
-  ): Promise<ApiResponse<BlogPost>> {
+  async deletePost(options: DeletePostOptions): Promise<ApiResponse<string>> {
     try {
       validatePostId(options.id);
 
-      const result = await this.aoconnect.message({
+      const messageId = await this.aoconnect.message({
         process: this.processId,
         tags: [
           { name: 'Action', value: 'Delete-Post' },
           { name: 'Id', value: options.id.toString() },
         ],
-        signer: createDataItemSigner(options.wallet),
+        signer: this.getSigner(options.wallet),
       });
 
-      if (!result) {
+      if (!messageId) {
         return {
           success: false,
           data: 'Delete-Post message failed',
         };
       }
-      return {
-        success: true,
-        data: `Post ${options.id} deleted`,
-      };
+
+      // Try to get the result of the message
+      try {
+        const resultData = await this.getMessageResult(messageId);
+        return this.parseMessageResponse(resultData);
+      } catch (resultError) {
+        return {
+          success: true,
+          data: `Post ${options.id} deleted successfully. Message ID: ${messageId}`,
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -283,28 +342,35 @@ export class InkwellBlogSDK implements BlogSDK {
    * Add editors to the blog (Admin role required)
    */
   async addEditors(
-    options: RoleManagementOptions & { wallet: any }
-  ): Promise<ApiResponse<RoleUpdateResult[]>> {
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[] | string>> {
     try {
       validateRoleManagementOptions(options);
 
-      const result = await this.aoconnect.message({
+      const messageId = await this.aoconnect.message({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Add-Editors' }],
         data: JSON.stringify({ accounts: options.accounts }),
-        signer: createDataItemSigner(options.wallet),
+        signer: this.getSigner(options.wallet),
       });
 
-      if (!result) {
+      if (!messageId) {
         return {
           success: false,
           data: 'Add-Editors message failed',
         };
       }
-      return {
-        success: true,
-        data: `Editors ${options.accounts.join(', ')} added`,
-      };
+
+      // Try to get the result of the message
+      try {
+        const resultData = await this.getMessageResult(messageId);
+        return this.parseMessageResponse(resultData);
+      } catch (resultError) {
+        return {
+          success: true,
+          data: `Editors ${options.accounts.join(', ')} added successfully. Message ID: ${messageId}`,
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -317,28 +383,35 @@ export class InkwellBlogSDK implements BlogSDK {
    * Remove editors from the blog (Admin role required)
    */
   async removeEditors(
-    options: RoleManagementOptions & { wallet: any }
-  ): Promise<ApiResponse<RoleUpdateResult[]>> {
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[] | string>> {
     try {
       validateRoleManagementOptions(options);
 
-      const result = await this.aoconnect.message({
+      const messageId = await this.aoconnect.message({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Remove-Editors' }],
         data: JSON.stringify({ accounts: options.accounts }),
-        signer: createDataItemSigner(options.wallet),
+        signer: this.getSigner(options.wallet),
       });
 
-      if (!result) {
+      if (!messageId) {
         return {
           success: false,
           data: 'Remove-Editors message failed',
         };
       }
-      return {
-        success: true,
-        data: `Editors ${options.accounts.join(', ')} removed`,
-      };
+
+      // Try to get the result of the message
+      try {
+        const resultData = await this.getMessageResult(messageId);
+        return this.parseMessageResponse(resultData);
+      } catch (resultError) {
+        return {
+          success: true,
+          data: `Editors ${options.accounts.join(', ')} removed successfully. Message ID: ${messageId}`,
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -351,28 +424,35 @@ export class InkwellBlogSDK implements BlogSDK {
    * Add admins to the blog (Admin role required)
    */
   async addAdmins(
-    options: RoleManagementOptions & { wallet: any }
-  ): Promise<ApiResponse<RoleUpdateResult[]>> {
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[] | string>> {
     try {
       validateRoleManagementOptions(options);
 
-      const result = await this.aoconnect.message({
+      const messageId = await this.aoconnect.message({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Add-Admins' }],
         data: JSON.stringify({ accounts: options.accounts }),
-        signer: createDataItemSigner(options.wallet),
+        signer: this.getSigner(options.wallet),
       });
 
-      if (!result) {
+      if (!messageId) {
         return {
           success: false,
           data: 'Add-Admins message failed',
         };
       }
-      return {
-        success: true,
-        data: `Admins ${options.accounts.join(', ')} added`,
-      };
+
+      // Try to get the result of the message
+      try {
+        const resultData = await this.getMessageResult(messageId);
+        return this.parseMessageResponse(resultData);
+      } catch (resultError) {
+        return {
+          success: true,
+          data: `Admins ${options.accounts.join(', ')} added successfully. Message ID: ${messageId}`,
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -385,28 +465,35 @@ export class InkwellBlogSDK implements BlogSDK {
    * Remove admins from the blog (Admin role required)
    */
   async removeAdmins(
-    options: RoleManagementOptions & { wallet: any }
-  ): Promise<ApiResponse<RoleUpdateResult[]>> {
+    options: RoleManagementOptions
+  ): Promise<ApiResponse<RoleUpdateResult[] | string>> {
     try {
       validateRoleManagementOptions(options);
 
-      const result = await this.aoconnect.message({
+      const messageId = await this.aoconnect.message({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Remove-Admins' }],
         data: JSON.stringify({ accounts: options.accounts }),
-        signer: createDataItemSigner(options.wallet),
+        signer: this.getSigner(options.wallet),
       });
 
-      if (!result) {
+      if (!messageId) {
         return {
           success: false,
           data: 'Remove-Admins message failed',
         };
       }
-      return {
-        success: true,
-        data: `Admins ${options.accounts.join(', ')} removed`,
-      };
+
+      // Try to get the result of the message
+      try {
+        const resultData = await this.getMessageResult(messageId);
+        return this.parseMessageResponse(resultData);
+      } catch (resultError) {
+        return {
+          success: true,
+          data: `Admins ${options.accounts.join(', ')} removed successfully. Message ID: ${messageId}`,
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -425,7 +512,7 @@ export class InkwellBlogSDK implements BlogSDK {
         tags: [{ name: 'Action', value: 'Get-Editors' }],
       });
 
-      return this.parseResponse(result);
+      return this.parseMessageResponse(result);
     } catch (error) {
       return {
         success: false,
@@ -444,7 +531,7 @@ export class InkwellBlogSDK implements BlogSDK {
         tags: [{ name: 'Action', value: 'Get-Admins' }],
       });
 
-      return this.parseResponse(result);
+      return this.parseMessageResponse(result);
     } catch (error) {
       return {
         success: false,
@@ -458,27 +545,35 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   async setBlogDetails(options: {
     data: UpdateBlogDetailsData;
-    wallet: any;
-  }): Promise<ApiResponse<BlogDetails>> {
+    wallet?: any;
+  }): Promise<ApiResponse<BlogDetails | string>> {
     try {
       validateBlogDetailsData(options.data);
 
-      const result = await this.aoconnect.message({
+      const messageId = await this.aoconnect.message({
         process: this.processId,
         tags: [{ name: 'Action', value: 'Set-Blog-Details' }],
         data: JSON.stringify(options.data),
-        signer: createDataItemSigner(options.wallet),
+        signer: this.getSigner(options.wallet),
       });
-      if (!result) {
+
+      if (!messageId) {
         return {
           success: false,
           data: 'Set-Blog-Details message failed',
         };
       }
-      return {
-        success: true,
-        data: options.data as BlogDetails,
-      };
+
+      // Try to get the result of the message
+      try {
+        const resultData = await this.getMessageResult(messageId);
+        return this.parseDryrunResponse(resultData);
+      } catch (resultError) {
+        return {
+          success: true,
+          data: `Blog details updated successfully. Message ID: ${messageId}`,
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -488,17 +583,23 @@ export class InkwellBlogSDK implements BlogSDK {
   }
 
   /**
-   * Parse the response from the AO process
+   * Parse the response
    */
-  private parseResponse(result: any): ApiResponse<any> {
+  private parseResponse(
+    result: any,
+    recursiveParse: boolean = false
+  ): ApiResponse<any> {
     try {
       if (result && result.Messages && result.Messages.length > 0) {
         const message = result.Messages[0];
         if (message.Data) {
           const parsed = JSON.parse(message.Data);
+          if (recursiveParse && typeof parsed.data === 'string') {
+            parsed.data = JSON.parse(parsed.data);
+          }
           return {
             success: parsed.success,
-            data: parsed.success ? JSON.parse(parsed.data) : parsed.data,
+            data: parsed.data || parsed,
           };
         }
       }
@@ -514,6 +615,20 @@ export class InkwellBlogSDK implements BlogSDK {
           error instanceof Error ? error.message : 'Failed to parse response',
       };
     }
+  }
+
+  /**
+   * Parse the response from dryrun operations
+   */
+  private parseDryrunResponse(result: any): ApiResponse<any> {
+    return this.parseResponse(result);
+  }
+
+  /**
+   * Parse the response from message result operations
+   */
+  private parseMessageResponse(result: any): ApiResponse<any> {
+    return this.parseResponse(result, true);
   }
 
   /**

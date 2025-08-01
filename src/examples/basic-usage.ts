@@ -105,9 +105,16 @@ async function createPostExample() {
     });
 
     if (response.success) {
-      const post: BlogPost = response.data as BlogPost;
-      console.log(`Post created successfully! ID: ${post.id}`);
-      console.log(`Title: ${post.title}`);
+      console.log('Post created successfully!');
+      if (typeof response.data === 'object' && response.data !== null) {
+        // Got the actual post data
+        const post: BlogPost = response.data as BlogPost;
+        console.log(`   ID: ${post.id}`);
+        console.log(`   Title: ${post.title}`);
+      } else {
+        // Got a success message
+        console.log(`   Message: ${response.data}`);
+      }
     } else {
       console.error('Failed to create post:', response.data);
     }
@@ -153,17 +160,21 @@ async function adminOperationsExample() {
     });
 
     if (addEditorResponse.success) {
-      const results = addEditorResponse.data as RoleUpdateResult[];
-      results.forEach((result) => {
-        if (result.success) {
-          console.log(`Successfully added editor: ${result.account}`);
-        } else {
-          console.error(
-            `Failed to add editor ${result.account}:`,
-            result.error
-          );
-        }
-      });
+      console.log('Editors added successfully!');
+      if (Array.isArray(addEditorResponse.data)) {
+        // Got the actual role update results
+        const results = addEditorResponse.data as RoleUpdateResult[];
+        results.forEach((result) => {
+          if (result.success) {
+            console.log(`   ✅ Successfully added editor: ${result.account}`);
+          } else {
+            console.log(`   ❌ Failed to add editor ${result.account}: ${result.error}`);
+          }
+        });
+      } else {
+        // Got a success message
+        console.log(`   Message: ${addEditorResponse.data}`);
+      }
     } else {
       console.error('Failed to add editors:', addEditorResponse.data);
     }

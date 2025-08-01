@@ -25,6 +25,7 @@ async function authenticatedUsage() {
     const rolesResponse = await blogSDK.getUserRoles(walletAddress);
 
     if (rolesResponse.success) {
+      console.log('rolesResponse', JSON.stringify(rolesResponse, null, 2));
       const roles: string[] = rolesResponse.data as string[];
       console.log(`User roles: ${roles.join(', ')}`);
 
@@ -82,13 +83,19 @@ Created at: ${new Date().toISOString()}`,
     });
 
     if (response.success) {
-      const post = response.data as BlogPost;
       console.log(`✅ Post created successfully!`);
-      console.log(`   ID: ${post.id}`);
-      console.log(`   Title: ${post.title}`);
-      console.log(
-        `   Published: ${new Date(post.published_at).toLocaleString()}`
-      );
+      if (typeof response.data === 'object' && response.data !== null) {
+        // Got the actual post data
+        const post = response.data as BlogPost;
+        console.log(`   ID: ${post.id}`);
+        console.log(`   Title: ${post.title}`);
+        console.log(
+          `   Published: ${new Date(post.published_at).toLocaleString()}`
+        );
+      } else {
+        // Got a success message
+        console.log(`   Message: ${response.data}`);
+      }
     } else {
       console.error('❌ Failed to create post:', response.data);
     }
@@ -127,31 +134,25 @@ async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK, wallet: any) {
     });
 
     if (blogDetailsResponse.success) {
-      const blogDetailsResponseData = blogDetailsResponse.data as BlogDetails;
       console.log('✅ Blog details updated successfully!');
-      console.log(`   Title: ${blogDetailsResponseData.title}`);
-      console.log(`   Description: ${blogDetailsResponseData.description}`);
-      console.log(`   Logo: ${blogDetailsResponseData.logo}`);
+      if (
+        typeof blogDetailsResponse.data === 'object' &&
+        blogDetailsResponse.data !== null
+      ) {
+        // Got the actual blog details data
+        const blogDetailsResponseData = blogDetailsResponse.data as BlogDetails;
+        console.log(`   Title: ${blogDetailsResponseData.title}`);
+        console.log(`   Description: ${blogDetailsResponseData.description}`);
+        console.log(`   Logo: ${blogDetailsResponseData.logo}`);
+      } else {
+        // Got a success message
+        console.log(`   Message: ${blogDetailsResponse.data}`);
+      }
     } else {
       console.error(
         '❌ Failed to update blog details:',
         blogDetailsResponse.data
       );
-    }
-
-    // Example: Add a new editor (replace with actual address)
-    const newEditorAddress = EDITOR_ADDRESS;
-    console.log(`\nAdding new editor: ${newEditorAddress}`);
-
-    const addEditorResponse = await blogSDK.addEditors({
-      accounts: [newEditorAddress],
-      wallet: wallet,
-    });
-
-    if (addEditorResponse.success) {
-      console.log(`✅ ${addEditorResponse.data}`);
-    } else {
-      console.error('❌ Failed to add editors:', addEditorResponse.data);
     }
 
     // Example: Remove an editor (replace with actual address)
@@ -164,12 +165,61 @@ async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK, wallet: any) {
     });
 
     if (removeEditorResponse.success) {
-      console.log(`✅ ${removeEditorResponse.data}`);
+      console.log('✅ Editors removed successfully!');
+      if (Array.isArray(removeEditorResponse.data)) {
+        // Got the actual role update results
+        const results = removeEditorResponse.data as RoleUpdateResult[];
+        results.forEach((result) => {
+          if (result[1]) {
+            console.log(`   ✅ Successfully removed editor: ${result[0]}`);
+          } else {
+            console.log(
+              `   ❌ Failed to remove editor ${result[0]}: ${result[2]}`
+            );
+          }
+        });
+      } else {
+        // Got a success message
+        console.log(`   Message: ${removeEditorResponse.data}`);
+      }
     } else {
       console.error('❌ Failed to remove editors:', removeEditorResponse.data);
     }
   } catch (error) {
     console.error('❌ Error in admin operations:', error);
+  }
+
+  // Example: Add a new editor (replace with actual address)
+  const newEditorAddress = EDITOR_ADDRESS;
+  console.log(`\nAdding new editor: ${newEditorAddress}`);
+
+  const addEditorResponse = await blogSDK.addEditors({
+    accounts: [newEditorAddress],
+    wallet: wallet,
+  });
+
+  if (addEditorResponse.success) {
+    console.log('✅ Editors added successfully!');
+    console.log(
+      'addEditorResponse',
+      JSON.stringify(addEditorResponse, null, 2)
+    );
+    if (Array.isArray(addEditorResponse.data)) {
+      // Got the actual role update results
+      const results = addEditorResponse.data as RoleUpdateResult[];
+      results.forEach((result) => {
+        if (result[1]) {
+          console.log(`   ✅ Successfully added editor: ${result[0]}`);
+        } else {
+          console.log(`   ❌ Failed to add editor ${result[0]}: ${result[2]}`);
+        }
+      });
+    } else {
+      // Got a success message
+      console.log(`   Message: ${addEditorResponse.data}`);
+    }
+  } else {
+    console.error('❌ Failed to add editors:', addEditorResponse.data);
   }
 }
 

@@ -49,11 +49,7 @@ export interface ApiResponse<T = any> {
   data: T | string;
 }
 
-export interface RoleUpdateResult {
-  account: string;
-  success: boolean;
-  error?: string;
-}
+export type RoleUpdateResult = [string, boolean, string?];
 
 export interface GetPostsOptions {
   ordered?: boolean;
@@ -65,19 +61,23 @@ export interface GetPostOptions {
 
 export interface CreatePostOptions {
   data: CreatePostData;
+  wallet?: any; // Optional: will use browser wallet if available
 }
 
 export interface UpdatePostOptions {
   id: number;
   data: UpdatePostData;
+  wallet?: any; // Optional: will use browser wallet if available
 }
 
 export interface DeletePostOptions {
   id: number;
+  wallet?: any; // Optional: will use browser wallet if available
 }
 
 export interface RoleManagementOptions {
   accounts: string[];
+  wallet?: any; // Optional: will use browser wallet if available
 }
 
 export interface BlogSDKConfig {
@@ -135,26 +135,31 @@ export interface BlogSDK {
   getUserRoles(walletAddress: string): Promise<ApiResponse<string[]>>;
 
   // Editor methods
-  createPost(options: CreatePostOptions): Promise<ApiResponse<BlogPost>>;
-  updatePost(options: UpdatePostOptions): Promise<ApiResponse<BlogPost>>;
-  deletePost(options: DeletePostOptions): Promise<ApiResponse<BlogPost>>;
+  createPost(
+    options: CreatePostOptions
+  ): Promise<ApiResponse<BlogPost | string>>;
+  updatePost(
+    options: UpdatePostOptions
+  ): Promise<ApiResponse<BlogPost | string>>;
+  deletePost(options: DeletePostOptions): Promise<ApiResponse<string>>;
 
   // Admin methods
   addEditors(
     options: RoleManagementOptions
-  ): Promise<ApiResponse<RoleUpdateResult[]>>;
+  ): Promise<ApiResponse<RoleUpdateResult[] | string>>;
   removeEditors(
     options: RoleManagementOptions
-  ): Promise<ApiResponse<RoleUpdateResult[]>>;
+  ): Promise<ApiResponse<RoleUpdateResult[] | string>>;
   addAdmins(
     options: RoleManagementOptions
-  ): Promise<ApiResponse<RoleUpdateResult[]>>;
+  ): Promise<ApiResponse<RoleUpdateResult[] | string>>;
   removeAdmins(
     options: RoleManagementOptions
-  ): Promise<ApiResponse<RoleUpdateResult[]>>;
+  ): Promise<ApiResponse<RoleUpdateResult[] | string>>;
   getEditors(): Promise<ApiResponse<string[]>>;
   getAdmins(): Promise<ApiResponse<string[]>>;
   setBlogDetails(options: {
     data: UpdateBlogDetailsData;
-  }): Promise<ApiResponse<BlogDetails>>;
+    wallet?: any; // Optional: will use browser wallet if available
+  }): Promise<ApiResponse<BlogDetails | string>>;
 }

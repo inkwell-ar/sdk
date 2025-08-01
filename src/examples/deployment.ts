@@ -119,13 +119,19 @@ Created at: ${new Date().toISOString()}`,
     });
 
     if (createPostResponse.success) {
-      const post = createPostResponse.data as BlogPost;
       console.log('✅ First blog post created successfully!');
-      console.log(`   Post ID: ${post.id}`);
-      console.log(`   Title: ${post.title}`);
-      console.log(
-        `   Published: ${new Date(post.published_at).toLocaleString()}`
-      );
+      if (typeof createPostResponse.data === 'object' && createPostResponse.data !== null) {
+        // Got the actual post data
+        const post = createPostResponse.data as BlogPost;
+        console.log(`   Post ID: ${post.id}`);
+        console.log(`   Title: ${post.title}`);
+        console.log(
+          `   Published: ${new Date(post.published_at).toLocaleString()}`
+        );
+      } else {
+        // Got a success message
+        console.log(`   Message: ${createPostResponse.data}`);
+      }
     } else {
       console.error('❌ Failed to create blog post:', createPostResponse.data);
     }
