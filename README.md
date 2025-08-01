@@ -497,6 +497,14 @@ This provides the best of both worlds:
 - **Actual data**: When possible, you get the parsed result from the process
 - **Graceful degradation**: If result retrieval fails, you still get confirmation
 
+### Parsing Logic
+
+The SDK uses a unified parsing approach that handles both dryrun and message responses:
+
+- **Dryrun responses**: Parsed directly from the AO process response
+- **Message responses**: Parsed with recursive support for nested JSON structures
+- **Smart fallback**: Returns the raw response if parsing fails
+
 ### Return Types
 
 Write operations can return either the actual data or a success message:
@@ -515,6 +523,19 @@ type BlogDetailsResponse = ApiResponse<BlogDetails | string>;
 type DeleteResponse = ApiResponse<string>;
 ```
 
+### RoleUpdateResult
+
+The `RoleUpdateResult` type represents the result of role management operations:
+
+```typescript
+type RoleUpdateResult = [string, boolean, string?];
+// [account, success, error?]
+```
+
+- `account`: The wallet address that was processed
+- `success`: Whether the operation succeeded
+- `error`: Optional error message if the operation failed
+
 ### Handling Dual Return Types
 
 ```typescript
@@ -529,6 +550,26 @@ if (response.success) {
   } else {
     // Got a success message
     console.log(`Message: ${response.data}`);
+  }
+}
+
+// For role management operations:
+const roleResponse = await blogSDK.addEditors({ accounts: ['address1'], wallet });
+
+if (roleResponse.success) {
+  if (Array.isArray(roleResponse.data)) {
+    // Got the actual role update results
+    const results = roleResponse.data as RoleUpdateResult[];
+    results.forEach(([account, success, error]) => {
+      if (success) {
+        console.log(`✅ Successfully added editor: ${account}`);
+      } else {
+        console.log(`❌ Failed to add editor ${account}: ${error}`);
+      }
+    });
+  } else {
+    // Got a success message
+    console.log(`Message: ${roleResponse.data}`);
   }
 }
 ```

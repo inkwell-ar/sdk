@@ -15,6 +15,13 @@ const mockAoconnect = {
   message: jest.fn(),
 };
 
+// Mock the result function from aoconnect
+jest.mock('@permaweb/aoconnect', () => ({
+  connect: jest.fn(() => mockAoconnect),
+  createDataItemSigner: jest.fn(),
+  result: jest.fn(),
+}));
+
 // Mock ao-deploy
 jest.mock('ao-deploy', () => ({
   deployContract: jest.fn(),
@@ -228,6 +235,26 @@ describe('InkwellBlogSDK', () => {
     it('should create a post', async () => {
       mockAoconnect.message.mockResolvedValue('message-id-123');
 
+      // Mock the result function to return a successful response
+      const { result } = require('@permaweb/aoconnect');
+      result.mockResolvedValue({
+        Messages: [
+          {
+            Data: JSON.stringify({
+              success: true,
+              data: {
+                id: 1,
+                title: 'New Post',
+                description: 'New Description',
+                published_at: Date.now(),
+                last_update: Date.now(),
+                authors: ['@test'],
+              },
+            }),
+          },
+        ],
+      });
+
       const postData = {
         title: 'New Post',
         description: 'New Description',
@@ -236,14 +263,14 @@ describe('InkwellBlogSDK', () => {
         authors: ['@test'],
       };
 
-      const result = await blogSDK.createPost({
+      const response = await blogSDK.createPost({
         data: postData,
         wallet: wallet,
       });
 
-      expect(result.success).toBe(true);
-      // result.data can be either a BlogPost object or a string message
-      expect(typeof result.data === 'string' || typeof result.data === 'object').toBe(true);
+      expect(response.success).toBe(true);
+      // response.data can be either a BlogPost object or a string message
+      expect(typeof response.data === 'string' || typeof response.data === 'object').toBe(true);
       expect(mockAoconnect.message).toHaveBeenCalledWith({
         process: 'test-process-id',
         tags: [{ name: 'Action', value: 'Create-Post' }],
@@ -273,14 +300,30 @@ describe('InkwellBlogSDK', () => {
     it('should add editors', async () => {
       mockAoconnect.message.mockResolvedValue('message-id-123');
 
-      const result = await blogSDK.addEditors({
+      // Mock the result function to return a successful response
+      const { result } = require('@permaweb/aoconnect');
+      result.mockResolvedValue({
+        Messages: [
+          {
+            Data: JSON.stringify({
+              success: true,
+              data: [
+                ['editor1', true, null],
+                ['editor2', true, null],
+              ],
+            }),
+          },
+        ],
+      });
+
+      const response = await blogSDK.addEditors({
         accounts: ['editor1', 'editor2'],
         wallet: wallet,
       });
 
-      expect(result.success).toBe(true);
-      // result.data can be either RoleUpdateResult[] or a string message
-      expect(typeof result.data === 'string' || Array.isArray(result.data)).toBe(true);
+      expect(response.success).toBe(true);
+      // response.data can be either RoleUpdateResult[] or a string message
+      expect(typeof response.data === 'string' || Array.isArray(response.data)).toBe(true);
       expect(mockAoconnect.message).toHaveBeenCalledWith({
         process: 'test-process-id',
         tags: [{ name: 'Action', value: 'Add-Editors' }],
@@ -312,20 +355,37 @@ describe('InkwellBlogSDK', () => {
     it('should set blog details', async () => {
       mockAoconnect.message.mockResolvedValue('message-id-123');
 
+      // Mock the result function to return a successful response
+      const { result } = require('@permaweb/aoconnect');
+      result.mockResolvedValue({
+        Messages: [
+          {
+            Data: JSON.stringify({
+              success: true,
+              data: {
+                title: 'My Blog',
+                description: 'A test blog',
+                logo: 'https://example.com/logo.png',
+              },
+            }),
+          },
+        ],
+      });
+
       const blogDetails = {
         title: 'My Blog',
         description: 'A test blog',
         logo: 'https://example.com/logo.png',
       };
 
-      const result = await blogSDK.setBlogDetails({
+      const response = await blogSDK.setBlogDetails({
         data: blogDetails,
         wallet: wallet,
       });
 
-      expect(result.success).toBe(true);
-      // result.data can be either BlogDetails object or a string message
-      expect(typeof result.data === 'string' || typeof result.data === 'object').toBe(true);
+      expect(response.success).toBe(true);
+      // response.data can be either BlogDetails object or a string message
+      expect(typeof response.data === 'string' || typeof response.data === 'object').toBe(true);
       expect(mockAoconnect.message).toHaveBeenCalledWith({
         process: 'test-process-id',
         tags: [{ name: 'Action', value: 'Set-Blog-Details' }],

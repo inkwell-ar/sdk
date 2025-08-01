@@ -1,6 +1,6 @@
 {
   "name": "@inkwell.ar/sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
       "description": "SDK for interacting with the Inkwell Blog CRUD AO process using aoconnect",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

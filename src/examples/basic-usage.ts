@@ -164,11 +164,11 @@ async function adminOperationsExample() {
       if (Array.isArray(addEditorResponse.data)) {
         // Got the actual role update results
         const results = addEditorResponse.data as RoleUpdateResult[];
-        results.forEach((result) => {
-          if (result.success) {
-            console.log(`   ✅ Successfully added editor: ${result.account}`);
+        results.forEach(([account, success, error]) => {
+          if (success) {
+            console.log(`   ✅ Successfully added editor: ${account}`);
           } else {
-            console.log(`   ❌ Failed to add editor ${result.account}: ${result.error}`);
+            console.log(`   ❌ Failed to add editor ${account}: ${error}`);
           }
         });
       } else {
