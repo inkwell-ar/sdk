@@ -5,52 +5,14 @@ import {
   BlogDetails,
   BlogPost,
 } from '../index';
-import Arweave from 'arweave';
+import { loadOrGenerateWallet } from './utils/wallet';
 
 // Example: Deploy and use a new Inkwell Blog process
 async function deployAndUseBlog() {
   try {
-    // Initialize Arweave
-    const arweave = Arweave.init({
-      host: 'arweave.net',
-      port: 443,
-      protocol: 'https',
-    });
+    const { wallet, walletAddress } = await loadOrGenerateWallet();
 
-        // Load or generate wallet
-    let wallet: any;
-    const walletPath = 'wallet.json';
-    
-    try {
-      // Try to load existing wallet
-      const fs = require('fs');
-      if (fs.existsSync(walletPath)) {
-        console.log(`📁 Loading wallet from ${walletPath}...`);
-        const walletData = fs.readFileSync(walletPath, 'utf8');
-        wallet = JSON.parse(walletData);
-      } else {
-        console.log('🔑 Generating new wallet...');
-        wallet = await arweave.wallets.generate();
-        
-        // Save wallet to file
-        fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
-        console.log(`💾 Wallet saved to ${walletPath}`);
-      }
-    } catch (error) {
-      console.log('🔑 Generating new wallet due to error...');
-      wallet = await arweave.wallets.generate();
-      
-      // Try to save wallet to file
-      try {
-        const fs = require('fs');
-        fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
-        console.log(`💾 Wallet saved to ${walletPath}`);
-      } catch (saveError) {
-        console.warn('⚠️  Could not save wallet to file:', saveError instanceof Error ? saveError.message : String(saveError));
-      }
-    }
-    
-    console.log('Wallet address:', await arweave.wallets.getAddress(wallet));
+    console.log('Wallet address:', walletAddress);
 
     // Deploy a new Inkwell Blog process
     console.log('\n=== Deploying Inkwell Blog Process ===');
@@ -116,6 +78,7 @@ async function deployAndUseBlog() {
         description: 'A blog about technology, life, and everything in between',
         logo: 'https://example.com/logo.png',
       },
+      wallet: wallet,
     });
 
     if (blogDetailsResponse.success) {
@@ -152,6 +115,7 @@ Created at: ${new Date().toISOString()}`,
         labels: ['welcome', 'first-post', 'inkwell'],
         authors: ['@myhandle'],
       },
+      wallet: wallet,
     });
 
     if (createPostResponse.success) {

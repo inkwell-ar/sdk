@@ -142,8 +142,8 @@ function AccessControl.get_user_roles(account)
     if not success then return nil, error end
 
     local user_roles = {}
-    for _, role in ipairs(roles) do
-        if role_members[role][account] then
+    for role, exists in pairs(roles) do
+        if exists and role_members[role][account] then
             table.insert(user_roles, role)
         end
     end
@@ -169,8 +169,10 @@ function AccessControl.get_all_roles()
     if not success then return nil, error end
 
     local all_roles = {}
-    for _, role in ipairs(roles) do
-        table.insert(all_roles, role)
+    for role, exists in pairs(roles) do
+        if exists then
+            table.insert(all_roles, role)
+        end
     end
     return all_roles, nil
 end

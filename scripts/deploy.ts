@@ -1,52 +1,17 @@
 #!/usr/bin/env node
 
 import { BlogDetails, BlogPost, InkwellBlogSDK } from '../src/index';
-import Arweave from 'arweave';
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadOrGenerateWallet } from '../src/examples/utils/wallet';
 
 async function main() {
   try {
     console.log('🚀 Inkwell Blog Deployment Script\n');
 
-    // Initialize Arweave
-    const arweave = Arweave.init({
-      host: 'arweave.net',
-      port: 443,
-      protocol: 'https',
-    });
-
     // Load or generate wallet
     const walletPath = process.argv[2] || 'wallet.json';
-    let wallet: any;
-
-    try {
-      if (fs.existsSync(walletPath)) {
-        console.log(`📁 Loading wallet from ${walletPath}...`);
-        const walletData = fs.readFileSync(walletPath, 'utf8');
-        wallet = JSON.parse(walletData);
-      } else {
-        console.log('🔑 Generating new wallet...');
-        wallet = await arweave.wallets.generate();
-
-        // Save wallet to file
-        fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
-        console.log(`💾 Wallet saved to ${walletPath}`);
-      }
-    } catch (error) {
-      console.log('🔑 Generating new wallet due to error...');
-      wallet = await arweave.wallets.generate();
-
-      // Try to save wallet to file
-      try {
-        fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
-        console.log(`💾 Wallet saved to ${walletPath}`);
-      } catch (saveError) {
-        console.warn('⚠️  Could not save wallet to file:', saveError instanceof Error ? saveError.message : String(saveError));
-      }
-    }
-
-    const walletAddress = await arweave.wallets.getAddress(wallet);
+    const { wallet, walletAddress } = await loadOrGenerateWallet(walletPath);
     console.log(`👤 Wallet address: ${walletAddress}\n`);
 
     // Get blog name from command line or prompt
@@ -123,6 +88,7 @@ async function main() {
         description: 'A blog powered by @inkwell.ar/sdk',
         logo: '',
       },
+      wallet: wallet,
     });
 
     if (blogDetailsResponse.success) {
@@ -163,6 +129,7 @@ Created at: ${new Date().toISOString()}`,
         labels: ['welcome', 'first-post', 'inkwell'],
         authors: [walletAddress],
       },
+      wallet: wallet,
     });
 
     if (createPostResponse.success) {

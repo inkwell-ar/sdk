@@ -325,8 +325,8 @@ end
 
 ----------------------------------
 -- List User Roles
-local function get_user_roles(msg)
-    local results, error = AccessControl.get_user_roles(msg.From)
+local function get_user_roles(user_address)
+    local results, error = AccessControl.get_user_roles(user_address)
     if not results then
         return false, error
     end
@@ -404,7 +404,8 @@ Handlers.add(
     "Get-User-Roles",
     Handlers.utils.hasMatchingTag("Action", "Get-User-Roles"),
     safe_handler(function(msg)
-        local success, data_or_error = get_user_roles(msg)
+        local user_address = msg.Tags["User-Address"]
+        local success, data_or_error = get_user_roles(user_address)
         reply_msg(msg, success, data_or_error)
     end)
 )

@@ -5,13 +5,20 @@ import {
   BlogInfo,
   RoleUpdateResult,
 } from '../index';
+import {
+  BLOG_PROCESS_ID,
+  EDITOR_ADDRESS,
+  OWNER_ADDRESS,
+} from './utils/constants';
+import { loadOrGenerateWallet } from './utils/wallet';
+
+const { wallet } = await loadOrGenerateWallet('wallet-mock.json');
 
 // Example: Basic usage of the @inkwell.ar/sdk
 async function basicUsage() {
   // Initialize the SDK with your process ID
   const blogSDK = new InkwellBlogSDK({
-    // processId: 'your-process-id-here',
-    processId: '7ZjOeV4ruQF3G5d1ikiioh9UX3A41IUU_hQnNGX_usE',
+    processId: BLOG_PROCESS_ID,
   });
 
   try {
@@ -61,7 +68,7 @@ async function basicUsage() {
 
     // Get user roles (public - shows roles for current wallet)
     console.log('\nFetching user roles...');
-    const rolesResponse = await blogSDK.getUserRoles();
+    const rolesResponse = await blogSDK.getUserRoles(OWNER_ADDRESS);
 
     if (rolesResponse.success) {
       const roles: string[] = rolesResponse.data as string[];
@@ -77,8 +84,7 @@ async function basicUsage() {
 // Example: Creating a new post (requires Editor role)
 async function createPostExample() {
   const blogSDK = new InkwellBlogSDK({
-    // processId: 'your-process-id-here',
-    processId: '7ZjOeV4ruQF3G5d1ikiioh9UX3A41IUU_hQnNGX_usE',
+    processId: BLOG_PROCESS_ID,
   });
 
   const newPostData: CreatePostData = {
@@ -93,7 +99,10 @@ async function createPostExample() {
 
   try {
     console.log('Creating new post...');
-    const response = await blogSDK.createPost({ data: newPostData });
+    const response = await blogSDK.createPost({
+      data: newPostData,
+      wallet: wallet,
+    });
 
     if (response.success) {
       const post: BlogPost = response.data as BlogPost;
@@ -110,8 +119,7 @@ async function createPostExample() {
 // Example: Admin operations (requires Admin role)
 async function adminOperationsExample() {
   const blogSDK = new InkwellBlogSDK({
-    // processId: 'your-process-id-here',
-    processId: '7ZjOeV4ruQF3G5d1ikiioh9UX3A41IUU_hQnNGX_usE',
+    processId: BLOG_PROCESS_ID,
   });
 
   try {
@@ -140,8 +148,8 @@ async function adminOperationsExample() {
     // Add a new editor
     console.log('\nAdding new editor...');
     const addEditorResponse = await blogSDK.addEditors({
-      //   accounts: ['new-editor-address'],
-      accounts: ['E_pOZW6MDRtcTraQlIEM0p4l_AedIadAO9j-RzuPol8'],
+      accounts: [EDITOR_ADDRESS],
+      wallet: wallet,
     });
 
     if (addEditorResponse.success) {

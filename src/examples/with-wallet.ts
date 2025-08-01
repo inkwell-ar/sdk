@@ -5,83 +5,47 @@ import {
   BlogDetails,
   RoleUpdateResult,
 } from '../index';
-import Arweave from 'arweave';
+import { BLOG_PROCESS_ID, EDITOR_ADDRESS } from './utils/constants';
+import { loadOrGenerateWallet } from './utils/wallet';
 
 // Example: Using the SDK with a wallet for authenticated operations
 async function authenticatedUsage() {
-  // Initialize Arweave
-  const arweave = Arweave.init({
-    host: 'arweave.net',
-    port: 443,
-    protocol: 'https',
-  });
-
-  // Load or generate wallet
-  let wallet: any;
-  const walletPath = 'wallet.json';
-  
-  try {
-    // Try to load existing wallet
-    const fs = require('fs');
-    if (fs.existsSync(walletPath)) {
-      console.log(`📁 Loading wallet from ${walletPath}...`);
-      const walletData = fs.readFileSync(walletPath, 'utf8');
-      wallet = JSON.parse(walletData);
-    } else {
-      console.log('🔑 Generating new wallet...');
-      wallet = await arweave.wallets.generate();
-      
-      // Save wallet to file
-      fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
-      console.log(`💾 Wallet saved to ${walletPath}`);
-    }
-  } catch (error) {
-    console.log('🔑 Generating new wallet due to error...');
-    wallet = await arweave.wallets.generate();
-    
-    // Try to save wallet to file
-    try {
-      const fs = require('fs');
-      fs.writeFileSync(walletPath, JSON.stringify(wallet, null, 2));
-      console.log(`💾 Wallet saved to ${walletPath}`);
-    } catch (saveError) {
-              console.warn('⚠️  Could not save wallet to file:', saveError instanceof Error ? saveError.message : String(saveError));
-    }
-  }
-  
-  console.log('Wallet address:', await arweave.wallets.getAddress(wallet));
+  const { wallet, walletAddress } = await loadOrGenerateWallet('wallet.json');
+  console.log('Wallet address:', walletAddress);
 
   // Initialize the SDK with wallet for authenticated operations
   const blogSDK = new InkwellBlogSDK({
-    processId: 'your-process-id-here',
+    processId: BLOG_PROCESS_ID,
     wallet: wallet,
   });
 
   try {
     // Check user roles first
     console.log('Checking user roles...');
-    const rolesResponse = await blogSDK.getUserRoles();
+    const rolesResponse = await blogSDK.getUserRoles(walletAddress);
+
+    console.log('> rolesResponse: ', JSON.stringify(rolesResponse, null, 2));
 
     if (rolesResponse.success) {
       const roles: string[] = rolesResponse.data as string[];
       console.log(`User roles: ${roles.join(', ')}`);
 
+      // Check if user has admin role
+      if (roles.includes('DEFAULT_ADMIN_ROLE')) {
+        console.log('User has admin role - can manage roles');
+        await adminOperationsWithWallet(blogSDK, wallet);
+      } else {
+        console.log('User does not have admin role - cannot manage roles');
+      }
+
       // Check if user has editor role
       if (roles.includes('EDITOR_ROLE')) {
         console.log('User has editor role - can create/edit posts');
-        await createPostWithWallet(blogSDK);
+        await createPostWithWallet(blogSDK, wallet);
       } else {
         console.log(
           'User does not have editor role - cannot create/edit posts'
         );
-      }
-
-      // Check if user has admin role
-      if (roles.includes('DEFAULT_ADMIN_ROLE')) {
-        console.log('User has admin role - can manage roles');
-        await adminOperationsWithWallet(blogSDK);
-      } else {
-        console.log('User does not have admin role - cannot manage roles');
       }
     } else {
       console.error('Failed to fetch user roles:', rolesResponse.data);
@@ -92,7 +56,7 @@ async function authenticatedUsage() {
 }
 
 // Example: Creating a post with wallet authentication
-async function createPostWithWallet(blogSDK: InkwellBlogSDK) {
+async function createPostWithWallet(blogSDK: InkwellBlogSDK, wallet: any) {
   const newPostData: CreatePostData = {
     title: 'Authenticated Blog Post',
     description: 'This post was created using wallet authentication',
@@ -114,7 +78,10 @@ Created at: ${new Date().toISOString()}`,
 
   try {
     console.log('\nCreating authenticated post...');
-    const response = await blogSDK.createPost({ data: newPostData });
+    const response = await blogSDK.createPost({
+      data: newPostData,
+      wallet: wallet,
+    });
 
     if (response.success) {
       const post = response.data as BlogPost;
@@ -133,7 +100,7 @@ Created at: ${new Date().toISOString()}`,
 }
 
 // Example: Admin operations with wallet authentication
-async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK) {
+async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK, wallet: any) {
   try {
     // Get current editors and admins
     console.log('\n=== Current Role Members ===');
@@ -158,6 +125,7 @@ async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK) {
         description: 'A blog managed with wallet authentication',
         logo: 'https://example.com/authenticated-logo.png',
       },
+      wallet: wallet,
     });
 
     if (blogDetailsResponse.success) {
@@ -174,11 +142,12 @@ async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK) {
     }
 
     // Example: Add a new editor (replace with actual address)
-    const newEditorAddress = 'new-editor-address-here';
+    const newEditorAddress = EDITOR_ADDRESS;
     console.log(`\nAdding new editor: ${newEditorAddress}`);
 
     const addEditorResponse = await blogSDK.addEditors({
       accounts: [newEditorAddress],
+      wallet: wallet,
     });
 
     if (addEditorResponse.success) {
@@ -198,11 +167,12 @@ async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK) {
     }
 
     // Example: Remove an editor (replace with actual address)
-    const editorToRemove = 'editor-to-remove-here';
+    const editorToRemove = EDITOR_ADDRESS;
     console.log(`\nRemoving editor: ${editorToRemove}`);
 
     const removeEditorResponse = await blogSDK.removeEditors({
       accounts: [editorToRemove],
+      wallet: wallet,
     });
 
     if (removeEditorResponse.success) {
@@ -227,8 +197,10 @@ async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK) {
 
 // Example: Error handling and validation
 async function errorHandlingExample() {
+  const { wallet } = await loadOrGenerateWallet('wallet.json');
+
   const blogSDK = new InkwellBlogSDK({
-    processId: 'your-process-id-here',
+    processId: BLOG_PROCESS_ID,
   });
 
   try {
@@ -243,7 +215,10 @@ async function errorHandlingExample() {
       authors: [], // Invalid: empty authors array
     };
 
-    const response = await blogSDK.createPost({ data: invalidPostData as any });
+    const response = await blogSDK.createPost({
+      data: invalidPostData as any,
+      wallet: wallet,
+    });
 
     if (!response.success) {
       console.log('✅ Validation error caught:', response.data);

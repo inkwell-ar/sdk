@@ -13,6 +13,7 @@ build/
 deployment-*.json
 deployment-*.txt
 wallet.json
+wallet-mock.json
 
 # Environment variables
 .env

@@ -132,7 +132,7 @@ export interface BlogSDK {
   getInfo(): Promise<ApiResponse<BlogInfo>>;
   getAllPosts(options?: GetPostsOptions): Promise<ApiResponse<BlogPost[]>>;
   getPost(options: GetPostOptions): Promise<ApiResponse<BlogPost>>;
-  getUserRoles(): Promise<ApiResponse<string[]>>;
+  getUserRoles(walletAddress: string): Promise<ApiResponse<string[]>>;
 
   // Editor methods
   createPost(options: CreatePostOptions): Promise<ApiResponse<BlogPost>>;

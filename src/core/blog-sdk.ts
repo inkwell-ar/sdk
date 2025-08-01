@@ -1,4 +1,4 @@
-import { connect } from '@permaweb/aoconnect';
+import { connect, createSigner } from '@permaweb/aoconnect';
 import { deployContract } from 'ao-deploy';
 import {
   BlogSDK,
@@ -153,11 +153,14 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Get user roles for the current wallet
    */
-  async getUserRoles(): Promise<ApiResponse<string[]>> {
+  async getUserRoles(walletAddress: string): Promise<ApiResponse<string[]>> {
     try {
       const result = await this.aoconnect.dryrun({
         process: this.processId,
-        tags: [{ name: 'Action', value: 'Get-User-Roles' }],
+        tags: [
+          { name: 'Action', value: 'Get-User-Roles' },
+          { name: 'User-Address', value: walletAddress },
+        ],
       });
 
       return this.parseResponse(result);
@@ -172,7 +175,9 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Create a new post (Editor role required)
    */
-  async createPost(options: CreatePostOptions): Promise<ApiResponse<BlogPost>> {
+  async createPost(
+    options: CreatePostOptions & { wallet: any }
+  ): Promise<ApiResponse<BlogPost>> {
     try {
       validateCreatePostData(options.data);
 
@@ -180,6 +185,7 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Create-Post' }],
         data: JSON.stringify(options.data),
+        signer: createSigner(options.wallet),
       });
 
       return this.parseResponse(result);
@@ -194,7 +200,9 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Update an existing post (Editor role required)
    */
-  async updatePost(options: UpdatePostOptions): Promise<ApiResponse<BlogPost>> {
+  async updatePost(
+    options: UpdatePostOptions & { wallet: any }
+  ): Promise<ApiResponse<BlogPost>> {
     try {
       validatePostId(options.id);
       validateUpdatePostData(options.data);
@@ -206,6 +214,7 @@ export class InkwellBlogSDK implements BlogSDK {
           { name: 'Id', value: options.id.toString() },
         ],
         data: JSON.stringify(options.data),
+        signer: createSigner(options.wallet),
       });
 
       return this.parseResponse(result);
@@ -220,7 +229,9 @@ export class InkwellBlogSDK implements BlogSDK {
   /**
    * Delete a post (Editor role required)
    */
-  async deletePost(options: DeletePostOptions): Promise<ApiResponse<BlogPost>> {
+  async deletePost(
+    options: DeletePostOptions & { wallet: any }
+  ): Promise<ApiResponse<BlogPost>> {
     try {
       validatePostId(options.id);
 
@@ -230,6 +241,7 @@ export class InkwellBlogSDK implements BlogSDK {
           { name: 'Action', value: 'Delete-Post' },
           { name: 'Id', value: options.id.toString() },
         ],
+        signer: createSigner(options.wallet),
       });
 
       return this.parseResponse(result);
@@ -245,7 +257,7 @@ export class InkwellBlogSDK implements BlogSDK {
    * Add editors to the blog (Admin role required)
    */
   async addEditors(
-    options: RoleManagementOptions
+    options: RoleManagementOptions & { wallet: any }
   ): Promise<ApiResponse<RoleUpdateResult[]>> {
     try {
       validateRoleManagementOptions(options);
@@ -254,6 +266,7 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Add-Editors' }],
         data: JSON.stringify({ accounts: options.accounts }),
+        signer: createSigner(options.wallet),
       });
 
       return this.parseResponse(result);
@@ -269,7 +282,7 @@ export class InkwellBlogSDK implements BlogSDK {
    * Remove editors from the blog (Admin role required)
    */
   async removeEditors(
-    options: RoleManagementOptions
+    options: RoleManagementOptions & { wallet: any }
   ): Promise<ApiResponse<RoleUpdateResult[]>> {
     try {
       validateRoleManagementOptions(options);
@@ -278,6 +291,7 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Remove-Editors' }],
         data: JSON.stringify({ accounts: options.accounts }),
+        signer: createSigner(options.wallet),
       });
 
       return this.parseResponse(result);
@@ -293,7 +307,7 @@ export class InkwellBlogSDK implements BlogSDK {
    * Add admins to the blog (Admin role required)
    */
   async addAdmins(
-    options: RoleManagementOptions
+    options: RoleManagementOptions & { wallet: any }
   ): Promise<ApiResponse<RoleUpdateResult[]>> {
     try {
       validateRoleManagementOptions(options);
@@ -302,6 +316,7 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Add-Admins' }],
         data: JSON.stringify({ accounts: options.accounts }),
+        signer: createSigner(options.wallet),
       });
 
       return this.parseResponse(result);
@@ -317,7 +332,7 @@ export class InkwellBlogSDK implements BlogSDK {
    * Remove admins from the blog (Admin role required)
    */
   async removeAdmins(
-    options: RoleManagementOptions
+    options: RoleManagementOptions & { wallet: any }
   ): Promise<ApiResponse<RoleUpdateResult[]>> {
     try {
       validateRoleManagementOptions(options);
@@ -326,6 +341,7 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Remove-Admins' }],
         data: JSON.stringify({ accounts: options.accounts }),
+        signer: createSigner(options.wallet),
       });
 
       return this.parseResponse(result);
@@ -380,6 +396,7 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   async setBlogDetails(options: {
     data: UpdateBlogDetailsData;
+    wallet: any;
   }): Promise<ApiResponse<BlogDetails>> {
     try {
       validateBlogDetailsData(options.data);
@@ -388,6 +405,7 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Set-Blog-Details' }],
         data: JSON.stringify(options.data),
+        signer: createSigner(options.wallet),
       });
 
       return this.parseResponse(result);
@@ -410,7 +428,7 @@ export class InkwellBlogSDK implements BlogSDK {
           const parsed = JSON.parse(message.Data);
           return {
             success: parsed.success,
-            data: parsed.data,
+            data: parsed.success ? JSON.parse(parsed.data) : parsed.data,
           };
         }
       }
