@@ -24,8 +24,6 @@ async function authenticatedUsage() {
     console.log('Checking user roles...');
     const rolesResponse = await blogSDK.getUserRoles(walletAddress);
 
-    console.log('> rolesResponse: ', JSON.stringify(rolesResponse, null, 2));
-
     if (rolesResponse.success) {
       const roles: string[] = rolesResponse.data as string[];
       console.log(`User roles: ${roles.join(', ')}`);
@@ -151,17 +149,7 @@ async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK, wallet: any) {
     });
 
     if (addEditorResponse.success) {
-      const results = addEditorResponse.data as RoleUpdateResult[];
-      results.forEach((result) => {
-        if (result.success) {
-          console.log(`✅ Successfully added editor: ${result.account}`);
-        } else {
-          console.error(
-            `❌ Failed to add editor ${result.account}:`,
-            result.error
-          );
-        }
-      });
+      console.log(`✅ ${addEditorResponse.data}`);
     } else {
       console.error('❌ Failed to add editors:', addEditorResponse.data);
     }
@@ -176,17 +164,7 @@ async function adminOperationsWithWallet(blogSDK: InkwellBlogSDK, wallet: any) {
     });
 
     if (removeEditorResponse.success) {
-      const results = removeEditorResponse.data as RoleUpdateResult[];
-      results.forEach((result) => {
-        if (result.success) {
-          console.log(`✅ Successfully removed editor: ${result.account}`);
-        } else {
-          console.error(
-            `❌ Failed to remove editor ${result.account}:`,
-            result.error
-          );
-        }
-      });
+      console.log(`✅ ${removeEditorResponse.data}`);
     } else {
       console.error('❌ Failed to remove editors:', removeEditorResponse.data);
     }

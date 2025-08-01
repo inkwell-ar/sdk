@@ -1,4 +1,4 @@
-import { connect, createSigner } from '@permaweb/aoconnect';
+import { connect, createDataItemSigner } from '@permaweb/aoconnect';
 import { deployContract } from 'ao-deploy';
 import {
   BlogSDK,
@@ -185,10 +185,18 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Create-Post' }],
         data: JSON.stringify(options.data),
-        signer: createSigner(options.wallet),
+        signer: createDataItemSigner(options.wallet),
       });
-
-      return this.parseResponse(result);
+      if (!result) {
+        return {
+          success: false,
+          data: 'Create-Post message failed',
+        };
+      }
+      return {
+        success: true,
+        data: options.data as BlogPost,
+      };
     } catch (error) {
       return {
         success: false,
@@ -214,10 +222,19 @@ export class InkwellBlogSDK implements BlogSDK {
           { name: 'Id', value: options.id.toString() },
         ],
         data: JSON.stringify(options.data),
-        signer: createSigner(options.wallet),
+        signer: createDataItemSigner(options.wallet),
       });
 
-      return this.parseResponse(result);
+      if (!result) {
+        return {
+          success: false,
+          data: 'Update-Post message failed',
+        };
+      }
+      return {
+        success: true,
+        data: options.data as BlogPost,
+      };
     } catch (error) {
       return {
         success: false,
@@ -241,10 +258,19 @@ export class InkwellBlogSDK implements BlogSDK {
           { name: 'Action', value: 'Delete-Post' },
           { name: 'Id', value: options.id.toString() },
         ],
-        signer: createSigner(options.wallet),
+        signer: createDataItemSigner(options.wallet),
       });
 
-      return this.parseResponse(result);
+      if (!result) {
+        return {
+          success: false,
+          data: 'Delete-Post message failed',
+        };
+      }
+      return {
+        success: true,
+        data: `Post ${options.id} deleted`,
+      };
     } catch (error) {
       return {
         success: false,
@@ -266,10 +292,19 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Add-Editors' }],
         data: JSON.stringify({ accounts: options.accounts }),
-        signer: createSigner(options.wallet),
+        signer: createDataItemSigner(options.wallet),
       });
 
-      return this.parseResponse(result);
+      if (!result) {
+        return {
+          success: false,
+          data: 'Add-Editors message failed',
+        };
+      }
+      return {
+        success: true,
+        data: `Editors ${options.accounts.join(', ')} added`,
+      };
     } catch (error) {
       return {
         success: false,
@@ -291,10 +326,19 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Remove-Editors' }],
         data: JSON.stringify({ accounts: options.accounts }),
-        signer: createSigner(options.wallet),
+        signer: createDataItemSigner(options.wallet),
       });
 
-      return this.parseResponse(result);
+      if (!result) {
+        return {
+          success: false,
+          data: 'Remove-Editors message failed',
+        };
+      }
+      return {
+        success: true,
+        data: `Editors ${options.accounts.join(', ')} removed`,
+      };
     } catch (error) {
       return {
         success: false,
@@ -316,10 +360,19 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Add-Admins' }],
         data: JSON.stringify({ accounts: options.accounts }),
-        signer: createSigner(options.wallet),
+        signer: createDataItemSigner(options.wallet),
       });
 
-      return this.parseResponse(result);
+      if (!result) {
+        return {
+          success: false,
+          data: 'Add-Admins message failed',
+        };
+      }
+      return {
+        success: true,
+        data: `Admins ${options.accounts.join(', ')} added`,
+      };
     } catch (error) {
       return {
         success: false,
@@ -341,10 +394,19 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Remove-Admins' }],
         data: JSON.stringify({ accounts: options.accounts }),
-        signer: createSigner(options.wallet),
+        signer: createDataItemSigner(options.wallet),
       });
 
-      return this.parseResponse(result);
+      if (!result) {
+        return {
+          success: false,
+          data: 'Remove-Admins message failed',
+        };
+      }
+      return {
+        success: true,
+        data: `Admins ${options.accounts.join(', ')} removed`,
+      };
     } catch (error) {
       return {
         success: false,
@@ -405,10 +467,18 @@ export class InkwellBlogSDK implements BlogSDK {
         process: this.processId,
         tags: [{ name: 'Action', value: 'Set-Blog-Details' }],
         data: JSON.stringify(options.data),
-        signer: createSigner(options.wallet),
+        signer: createDataItemSigner(options.wallet),
       });
-
-      return this.parseResponse(result);
+      if (!result) {
+        return {
+          success: false,
+          data: 'Set-Blog-Details message failed',
+        };
+      }
+      return {
+        success: true,
+        data: options.data as BlogDetails,
+      };
     } catch (error) {
       return {
         success: false,
