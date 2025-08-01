@@ -303,13 +303,6 @@ end
 ----------------------------------
 -- List Role Members
 local function get_role_members(msg, role)
-    local is_admin, err = AccessControl.only_role(msg.From, AccessControl.ROLES.DEFAULT_ADMIN)
-
-    -- Only ADMINs can list role members
-    if not is_admin then
-        return false, err
-    end
-
     local results, error = AccessControl.get_role_members(role)
     if not results then
         return false, error
