@@ -282,7 +282,7 @@ function AccessControl.grant_role(caller, role, account)
 
     local already_has_role, _ = AccessControl.has_role(account, role)
     if already_has_role then
-        return false, AccessControl.ERROR_MESSAGES.ACCOUNT_HAS_ROLE
+        return true, nil
     end
 
     role_members[role][account] = true
@@ -314,7 +314,7 @@ function AccessControl.revoke_role(caller, role, account)
 
     local has_role, _ = AccessControl.has_role(account, role)
     if not has_role then
-        return false, AccessControl.ERROR_MESSAGES.ACCOUNT_NO_ROLE
+        return true, nil
     end
 
     -- Prevent removing the last DEFAULT_ADMIN
