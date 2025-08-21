@@ -2,6 +2,7 @@
 
 export { InkwellBlogSDK } from './core/blog-sdk';
 export { BlogRegistrySDK } from './core/blog-registry-sdk';
+export { deployBlogInBrowser } from './core/browser-deploy';
 export type {
   BlogSDK,
   BlogSDKConfig,
