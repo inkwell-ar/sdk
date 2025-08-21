@@ -27,9 +27,52 @@ Or using yarn:
 yarn add @inkwell.ar/sdk
 ```
 
+## Browser Compatibility
+
+The SDK is designed to work in both browser and Node.js environments:
+
+- **✅ Browser**: Read operations, blog interactions, registry queries
+- **✅ Node.js**: Full functionality including deployment
+- **❌ Browser**: Blog deployment (requires Node.js file system APIs)
+
+For browser usage, you'll need an existing blog process ID. For deployment, use Node.js.
+
 ## Quick Start
 
-### 1. Deploy the Blog Registry (One-time setup)
+### Browser Environment
+
+The SDK works in browsers for reading and interacting with existing blogs:
+
+```typescript
+import { InkwellBlogSDK, BlogRegistrySDK } from '@inkwell.ar/sdk';
+
+// Initialize with existing blog process ID
+const blogSDK = new InkwellBlogSDK({
+  processId: 'existing-blog-process-id'
+});
+
+// Initialize the registry SDK
+const registry = new BlogRegistrySDK();
+
+// Get all posts
+const response = await blogSDK.getAllPosts({ ordered: true });
+if (response.success) {
+  console.log('Posts:', response.data);
+}
+
+// Check user permissions
+const canEdit = await registry.canEditBlog('wallet-address', 'blog-process-id');
+const canAdmin = await registry.canAdminBlog('wallet-address', 'blog-process-id');
+
+// Get user's blogs
+const userBlogs = await registry.getWalletBlogs('wallet-address');
+```
+
+### Node.js Environment (Full Features)
+
+For deployment and full functionality, use Node.js:
+
+#### 1. Deploy the Blog Registry (One-time setup)
 
 ```bash
 # Deploy the registry (requires wallet)
@@ -42,7 +85,7 @@ This will:
 - Save the process ID to `src/config/registry.ts`
 - Output the process ID for verification
 
-### 2. Deploy a Blog
+#### 2. Deploy a Blog
 
 ```typescript
 import { InkwellBlogSDK } from '@inkwell.ar/sdk';
@@ -55,7 +98,7 @@ const result = await InkwellBlogSDK.deploy({
 console.log('Blog deployed:', result.processId);
 ```
 
-### 3. Use the Blog and Registry
+#### 3. Use the Blog and Registry
 
 ```typescript
 import { InkwellBlogSDK, BlogRegistrySDK } from '@inkwell.ar/sdk';
