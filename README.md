@@ -27,9 +27,59 @@ Or using yarn:
 yarn add @inkwell.ar/sdk
 ```
 
+## Browser Compatibility
+
+The SDK is designed to work in both browser and Node.js environments:
+
+- **✅ Browser**: Full functionality including deployment
+- **✅ Node.js**: Full functionality including deployment
+- **✅ Both**: Read operations, blog interactions, registry queries
+
+The SDK automatically detects the environment and uses the appropriate deployment method.
+
 ## Quick Start
 
-### 1. Deploy the Blog Registry (One-time setup)
+### Browser Environment
+
+The SDK works in browsers for all operations including deployment:
+
+```typescript
+import { InkwellBlogSDK, BlogRegistrySDK } from '@inkwell.ar/sdk';
+
+// Deploy a new blog (works in browser!)
+// No wallet needed if browser wallet is connected
+const result = await InkwellBlogSDK.deploy({
+  name: 'my-blog'
+  // wallet: wallet // Optional - will use browser wallet if not provided
+});
+
+// Initialize with the deployed blog
+const blogSDK = new InkwellBlogSDK({
+  processId: result.processId
+});
+
+// Initialize the registry SDK
+const registry = new BlogRegistrySDK();
+
+// Get all posts
+const response = await blogSDK.getAllPosts({ ordered: true });
+if (response.success) {
+  console.log('Posts:', response.data);
+}
+
+// Check user permissions
+const canEdit = await registry.canEditBlog('wallet-address', result.processId);
+const canAdmin = await registry.canAdminBlog('wallet-address', result.processId);
+
+// Get user's blogs
+const userBlogs = await registry.getWalletBlogs('wallet-address');
+```
+
+### Node.js Environment
+
+For Node.js environments (same functionality as browser):
+
+#### 1. Deploy the Blog Registry (One-time setup)
 
 ```bash
 # Deploy the registry (requires wallet)
@@ -42,20 +92,22 @@ This will:
 - Save the process ID to `src/config/registry.ts`
 - Output the process ID for verification
 
-### 2. Deploy a Blog
+#### 2. Deploy a Blog
 
 ```typescript
 import { InkwellBlogSDK } from '@inkwell.ar/sdk';
 
 // Deploy a new blog (automatically configured with registry)
+// No wallet needed if browser wallet is connected
 const result = await InkwellBlogSDK.deploy({
   name: 'my-blog'
+  // wallet: wallet // Optional - will use browser wallet if not provided
 });
 
 console.log('Blog deployed:', result.processId);
 ```
 
-### 3. Use the Blog and Registry
+#### 3. Use the Blog and Registry
 
 ```typescript
 import { InkwellBlogSDK, BlogRegistrySDK } from '@inkwell.ar/sdk';
@@ -666,6 +718,13 @@ See `src/examples/basic-registry-usage.ts` for examples of:
 - Checking multiple wallets
 - Permission checking before actions
 - Registry statistics
+
+### Browser Deployment
+
+See `src/examples/browser-deployment.ts` for examples of:
+- Deploying blogs in browser environments
+- Using existing blogs in browsers
+- Cross-environment compatibility
 
 ## Development
 

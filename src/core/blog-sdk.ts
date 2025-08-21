@@ -1,6 +1,18 @@
 import { connect, createDataItemSigner } from '@permaweb/aoconnect';
-import { deployContract } from 'ao-deploy';
 import { BLOG_REGISTRY_PROCESS_ID } from '../config/registry';
+import { deployBlogInBrowser } from './browser-deploy';
+
+// Optional import for deployment (Node.js only)
+let deployContract: any = null;
+try {
+  if (typeof window === 'undefined') {
+    // Only import in Node.js environment
+    const aoDeploy = require('ao-deploy');
+    deployContract = aoDeploy.deployContract;
+  }
+} catch (error) {
+  // ao-deploy not available
+}
 import {
   BlogSDK,
   BlogSDKConfig,
@@ -81,9 +93,29 @@ export class InkwellBlogSDK implements BlogSDK {
 
   /**
    * Deploy a new Inkwell Blog process
+   * Works in both browser and Node.js environments
    */
   static async deploy(options: DeployOptions = {}): Promise<DeployResult> {
     try {
+      // Check if we're in a browser environment
+      if (typeof window !== 'undefined') {
+        // Use browser deployment
+        return await deployBlogInBrowser({
+          name: options.name,
+          wallet: options.wallet,
+        });
+      }
+
+      // Check if ao-deploy is available for Node.js
+      if (!deployContract) {
+        // Fallback to browser deployment method
+        console.warn('ao-deploy not available, using browser deployment method');
+        return await deployBlogInBrowser({
+          name: options.name,
+          wallet: options.wallet,
+        });
+      }
+
       // Check if registry is configured
       // @ts-ignore
       if (BLOG_REGISTRY_PROCESS_ID === 'YOUR_REGISTRY_PROCESS_ID_HERE') {
