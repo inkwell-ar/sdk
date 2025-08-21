@@ -1,6 +1,7 @@
 // Main entry point for the Inkwell Blog SDK
 
 export { InkwellBlogSDK } from './core/blog-sdk';
+export { BlogRegistrySDK } from './core/blog-registry-sdk';
 export type {
   BlogSDK,
   BlogSDKConfig,
@@ -20,6 +21,12 @@ export type {
   RoleUpdateResult,
   DeployOptions,
   DeployResult,
+  // Blog Registry types
+  BlogPermission,
+  WalletPermission,
+  RegistryStats,
+  SyncResult,
+  SyncResponse,
 } from './types';
 export { ValidationError } from './utils/validation';
 

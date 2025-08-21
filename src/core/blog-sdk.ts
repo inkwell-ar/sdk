@@ -1,5 +1,6 @@
-import { connect, createDataItemSigner, result } from '@permaweb/aoconnect';
+import { connect, createDataItemSigner } from '@permaweb/aoconnect';
 import { deployContract } from 'ao-deploy';
+import { BLOG_REGISTRY_PROCESS_ID } from '../config/registry';
 import {
   BlogSDK,
   BlogSDKConfig,
@@ -66,7 +67,7 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   private async getMessageResult(messageId: string): Promise<any> {
     try {
-      const resultData = await result({
+      const resultData = await this.aoconnect.result({
         message: messageId,
         process: this.processId,
       });
@@ -83,6 +84,12 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   static async deploy(options: DeployOptions = {}): Promise<DeployResult> {
     try {
+      // Check if registry is configured
+      // @ts-ignore
+      if (BLOG_REGISTRY_PROCESS_ID === 'YOUR_REGISTRY_PROCESS_ID_HERE') {
+        throw new Error('Registry process ID not configured. Please run the deployment script first: npm run deploy:registry');
+      }
+
       const defaultOptions = {
         name: options.name || 'inkwell-blog',
         contractPath: options.contractPath || './lua-process/inkwell_blog.lua',
@@ -90,6 +97,7 @@ export class InkwellBlogSDK implements BlogSDK {
         tags: [
           { name: 'App-Name', value: 'Inkwell-Blog' },
           { name: 'App-Version', value: '1.0.0' },
+          { name: 'Registry-Process-ID', value: BLOG_REGISTRY_PROCESS_ID },
           ...(options.tags || []),
         ],
         retry: {
@@ -106,6 +114,29 @@ export class InkwellBlogSDK implements BlogSDK {
         ...defaultOptions,
         wallet: options.wallet,
       });
+
+      // Sync initial permissions with registry
+      if (options.wallet && result.processId) {
+        try {
+          const aoconnect = connect({ MODE: 'legacy' });
+          const signer = createDataItemSigner(options.wallet);
+          
+          // Send sync message to the newly deployed blog
+          await aoconnect.message({
+            process: result.processId,
+            signer: signer,
+            tags: [
+              { name: 'Action', value: 'Sync-With-Registry' }
+            ],
+            data: ''
+          });
+
+          console.log('✅ Initial permissions synced with registry');
+        } catch (syncError) {
+          console.warn('⚠️ Failed to sync initial permissions with registry:', syncError);
+          // Don't fail the deployment if sync fails
+        }
+      }
 
       return {
         processId: result.processId,

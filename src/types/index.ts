@@ -163,3 +163,35 @@ export interface BlogSDK {
     wallet?: any; // Optional: will use browser wallet if available
   }): Promise<ApiResponse<BlogDetails | string>>;
 }
+
+// Blog Registry Types
+export interface BlogPermission {
+  blog_id: string;
+  roles: string[];
+  last_updated: number;
+}
+
+export interface WalletPermission {
+  wallet: string;
+  roles: string[];
+  last_updated: number;
+}
+
+export interface RegistryStats {
+  version: string;
+  wallet_count: number;
+  blog_count: number;
+  total_permissions: number;
+}
+
+export interface SyncResult {
+  wallet: string;
+  roles: string[];
+  synced: boolean;
+}
+
+export interface SyncResponse {
+  message: string;
+  synced_wallets: number;
+  results: SyncResult[];
+}
