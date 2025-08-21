@@ -1,7 +1,7 @@
 -- Blog Registry for tracking wallet permissions across blogs
 -- Maintains a mapping between wallets and their blog permissions
 
-Name = "Blog Registry"
+Name = Name or "Inkwell Blog Registry"
 Author = "@7i7o"
 
 local json = require('json')
@@ -48,14 +48,14 @@ local function validate_roles(roles)
     if not roles or type(roles) ~= "table" then
         return false, "Roles must be a table"
     end
-    
+
     for _, role in ipairs(roles) do
         local is_valid, error = validate_role(role)
         if not is_valid then
             return false, error
         end
     end
-    
+
     return true, nil
 end
 
@@ -97,37 +97,37 @@ end
 local function register_wallet_permissions(wallet, blog_id, roles)
     local success, error = validate_wallet(wallet)
     if not success then return false, error end
-    
+
     success, error = validate_blog_id(blog_id)
     if not success then return false, error end
-    
+
     success, error = validate_roles(roles)
     if not success then return false, error end
-    
+
     local timestamp = os.time()
-    
+
     -- Initialize wallet entry if it doesn't exist
     if not wallet_blogs[wallet] then
         wallet_blogs[wallet] = {}
     end
-    
+
     -- Initialize blog entry if it doesn't exist
     if not blog_wallets[blog_id] then
         blog_wallets[blog_id] = {}
     end
-    
+
     -- Update wallet -> blog mapping
     wallet_blogs[wallet][blog_id] = {
         roles = roles,
         last_updated = timestamp
     }
-    
+
     -- Update blog -> wallet mapping
     blog_wallets[blog_id][wallet] = {
         roles = roles,
         last_updated = timestamp
     }
-    
+
     return true, nil
 end
 
@@ -135,10 +135,10 @@ end
 local function remove_wallet_permissions(wallet, blog_id)
     local success, error = validate_wallet(wallet)
     if not success then return false, error end
-    
+
     success, error = validate_blog_id(blog_id)
     if not success then return false, error end
-    
+
     -- Remove from wallet -> blog mapping
     if wallet_blogs[wallet] then
         wallet_blogs[wallet][blog_id] = nil
@@ -147,7 +147,7 @@ local function remove_wallet_permissions(wallet, blog_id)
             wallet_blogs[wallet] = nil
         end
     end
-    
+
     -- Remove from blog -> wallet mapping
     if blog_wallets[blog_id] then
         blog_wallets[blog_id][wallet] = nil
@@ -156,7 +156,7 @@ local function remove_wallet_permissions(wallet, blog_id)
             blog_wallets[blog_id] = nil
         end
     end
-    
+
     return true, nil
 end
 
@@ -164,12 +164,12 @@ end
 local function update_wallet_roles(wallet, blog_id, roles)
     local success, error = validate_roles(roles)
     if not success then return false, error end
-    
+
     -- If roles is empty, remove the wallet entirely
     if #roles == 0 then
         return remove_wallet_permissions(wallet, blog_id)
     end
-    
+
     return register_wallet_permissions(wallet, blog_id, roles)
 end
 
@@ -177,7 +177,7 @@ end
 local function get_wallet_blogs(wallet)
     local success, error = validate_wallet(wallet)
     if not success then return nil, error end
-    
+
     local blogs = {}
     if wallet_blogs[wallet] then
         for blog_id, data in pairs(wallet_blogs[wallet]) do
@@ -188,7 +188,7 @@ local function get_wallet_blogs(wallet)
             })
         end
     end
-    
+
     return blogs, nil
 end
 
@@ -196,7 +196,7 @@ end
 local function get_blog_wallets(blog_id)
     local success, error = validate_blog_id(blog_id)
     if not success then return nil, error end
-    
+
     local wallets = {}
     if blog_wallets[blog_id] then
         for wallet, data in pairs(blog_wallets[blog_id]) do
@@ -207,7 +207,7 @@ local function get_blog_wallets(blog_id)
             })
         end
     end
-    
+
     return wallets, nil
 end
 
@@ -215,13 +215,13 @@ end
 local function wallet_has_role(wallet, blog_id, role)
     local success, error = validate_wallet(wallet)
     if not success then return false, error end
-    
+
     success, error = validate_blog_id(blog_id)
     if not success then return false, error end
-    
+
     success, error = validate_role(role)
     if not success then return false, error end
-    
+
     if wallet_blogs[wallet] and wallet_blogs[wallet][blog_id] then
         for _, wallet_role in ipairs(wallet_blogs[wallet][blog_id].roles) do
             if wallet_role == role then
@@ -229,7 +229,7 @@ local function wallet_has_role(wallet, blog_id, role)
             end
         end
     end
-    
+
     return false, nil
 end
 
@@ -238,21 +238,21 @@ local function get_registry_stats()
     local wallet_count = 0
     local blog_count = 0
     local total_permissions = 0
-    
+
     for _ in pairs(wallet_blogs) do
         wallet_count = wallet_count + 1
     end
-    
+
     for _ in pairs(blog_wallets) do
         blog_count = blog_count + 1
     end
-    
+
     for _, wallet_data in pairs(wallet_blogs) do
         for _ in pairs(wallet_data) do
             total_permissions = total_permissions + 1
         end
     end
-    
+
     return {
         version = REGISTRY_VERSION,
         wallet_count = wallet_count,
@@ -260,39 +260,6 @@ local function get_registry_stats()
         total_permissions = total_permissions
     }
 end
-
--- Bulk operations for efficiency
--- local function bulk_register_permissions(registrations)
---     if not registrations or type(registrations) ~= "table" then
---         return false, "Registrations must be a table"
---     end
-    
---     local results = {}
---     for _, registration in ipairs(registrations) do
---         if registration.wallet and registration.blog_id and registration.roles then
---             local success, error = register_wallet_permissions(
---                 registration.wallet,
---                 registration.blog_id,
---                 registration.roles
---             )
---             table.insert(results, {
---                 wallet = registration.wallet,
---                 blog_id = registration.blog_id,
---                 success = success,
---                 error = error
---             })
---         else
---             table.insert(results, {
---                 wallet = registration.wallet,
---                 blog_id = registration.blog_id,
---                 success = false,
---                 error = "Missing required fields"
---             })
---         end
---     end
-    
---     return true, results
--- end
 
 -- Message handlers for AO process
 
@@ -323,15 +290,15 @@ Handlers.add(
             reply_msg(msg, false, error)
             return
         end
-        
+
         if not data.wallet or not data.roles then
             reply_msg(msg, false, "Missing required fields: wallet, roles")
             return
         end
-        
+
         -- Use msg.From as the blog_id for security
         local blog_id = msg.From
-        
+
         local success, result_or_error = register_wallet_permissions(
             data.wallet,
             blog_id,
@@ -350,15 +317,15 @@ Handlers.add(
             reply_msg(msg, false, error)
             return
         end
-        
+
         if not data.wallet then
             reply_msg(msg, false, "Missing required fields: wallet")
             return
         end
-        
+
         -- Use msg.From as the blog_id for security
         local blog_id = msg.From
-        
+
         local success, result_or_error = remove_wallet_permissions(
             data.wallet,
             blog_id
@@ -376,15 +343,15 @@ Handlers.add(
             reply_msg(msg, false, error)
             return
         end
-        
+
         if not data.wallet or not data.roles then
             reply_msg(msg, false, "Missing required fields: wallet, roles")
             return
         end
-        
+
         -- Use msg.From as the blog_id for security
         local blog_id = msg.From
-        
+
         local success, result_or_error = update_wallet_roles(
             data.wallet,
             blog_id,
@@ -403,7 +370,7 @@ Handlers.add(
             reply_msg(msg, false, "Missing Wallet-Address tag")
             return
         end
-        
+
         local blogs, error = get_wallet_blogs(wallet)
         reply_msg(msg, blogs ~= nil, blogs or error)
     end)
@@ -418,7 +385,7 @@ Handlers.add(
             reply_msg(msg, false, "Missing Blog-ID tag")
             return
         end
-        
+
         local wallets, error = get_blog_wallets(blog_id)
         reply_msg(msg, wallets ~= nil, wallets or error)
     end)
@@ -431,12 +398,12 @@ Handlers.add(
         local wallet = msg.Tags["Wallet-Address"]
         local blog_id = msg.Tags["Blog-ID"]
         local role = msg.Tags["Role"]
-        
+
         if not wallet or not blog_id or not role then
             reply_msg(msg, false, "Missing required tags: Wallet-Address, Blog-ID, Role")
             return
         end
-        
+
         local has_role, error = wallet_has_role(wallet, blog_id, role)
         reply_msg(msg, true, { has_role = has_role, error = error })
     end)
@@ -451,42 +418,13 @@ Handlers.add(
     end)
 )
 
--- Handlers.add(
---     "Bulk-Register-Permissions",
---     Handlers.utils.hasMatchingTag("Action", "Bulk-Register-Permissions"),
---     safe_handler(function(msg)
---         local data, error = safe_json_decode(msg.Data)
---         if not data then
---             reply_msg(msg, false, error)
---             return
---         end
-        
---         if not data.registrations or type(data.registrations) ~= "table" then
---             reply_msg(msg, false, "Missing or invalid registrations field")
---             return
---         end
-        
---         -- Use msg.From as the blog_id for security
---         local blog_id = msg.From
-        
---         -- Update all registrations to use the blog_id from msg.From
---         for _, registration in ipairs(data.registrations) do
---             registration.blog_id = blog_id
---         end
-        
---         local success, result_or_error = bulk_register_permissions(data.registrations)
---         reply_msg(msg, success, result_or_error)
---     end)
--- )
-
 -- Export functions for direct use if needed
-return {
-    register_wallet_permissions = register_wallet_permissions,
-    remove_wallet_permissions = remove_wallet_permissions,
-    update_wallet_roles = update_wallet_roles,
-    get_wallet_blogs = get_wallet_blogs,
-    get_blog_wallets = get_blog_wallets,
-    wallet_has_role = wallet_has_role,
-    get_registry_stats = get_registry_stats,
-    -- bulk_register_permissions = bulk_register_permissions
-}
+-- return {
+--     register_wallet_permissions = register_wallet_permissions,
+--     remove_wallet_permissions = remove_wallet_permissions,
+--     update_wallet_roles = update_wallet_roles,
+--     get_wallet_blogs = get_wallet_blogs,
+--     get_blog_wallets = get_blog_wallets,
+--     wallet_has_role = wallet_has_role,
+--     get_registry_stats = get_registry_stats,
+-- }

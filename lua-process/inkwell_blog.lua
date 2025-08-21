@@ -15,8 +15,7 @@ AccessControl.create_role(Owner, AccessControl.ROLES.EDITOR, AccessControl.ROLES
 AccessControl.grant_role(Owner, AccessControl.ROLES.EDITOR, Owner)
 
 -- Registry integration
-local RegistryProcess = "YOUR_REGISTRY_PROCESS_ID" -- Replace with actual registry process ID
-local BlogID = ao.id -- Use the current process ID as the blog ID
+local RegistryProcess = "p2un0gLaXvUFc8Sm1ArASEPWRNVGzrYkBSr_KHgeLRg" -- Replace with actual registry process ID
 
 -- Posts storage
 Posts = Posts or {}

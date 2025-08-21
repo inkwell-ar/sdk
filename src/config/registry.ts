@@ -3,7 +3,7 @@
 // To deploy a new registry, run: npm run deploy:registry
 
 // Default registry process ID (replace with actual deployed process ID)
-export const BLOG_REGISTRY_PROCESS_ID = 'YOUR_REGISTRY_PROCESS_ID_HERE';
+export const BLOG_REGISTRY_PROCESS_ID = 'p2un0gLaXvUFc8Sm1ArASEPWRNVGzrYkBSr_KHgeLRg';
 
 // Registry configuration
 export const REGISTRY_CONFIG = {

@@ -14,21 +14,33 @@ async function deployRegistry() {
 
     // Read the registry Lua file
     const registryPath = join(__dirname, '../lua-process/blog_registry.lua');
-    const registrySource = readFileSync(registryPath, 'utf8');
 
     console.log('📄 Registry source loaded');
 
-    // Deploy the registry process using ao-deploy
-    const result = await deployContract({
-      name: 'Inkwell Blog Registry',
+    const defaultOptions = {
+      name: 'Inkwell-Blog-Registry',
       contractPath: registryPath,
+      luaPath: './lua-process/?.lua',
       tags: [
+        { name: 'App-Name', value: 'Inkwell-Blog-Registry' },
+        { name: 'App-Version', value: '1.0.0' },
         { name: 'Name', value: 'Inkwell Blog Registry' },
         { name: 'Author', value: '@7i7o' },
-        { name: 'Type', value: 'blog-registry' },
         { name: 'Version', value: '1.0.0' },
       ],
+      retry: {
+        count: 10,
+        delay: 3000,
+      },
+      minify: true,
+      onBoot: false,
       silent: false,
+      forceSpawn: false,
+    };
+
+    // Deploy the registry process using ao-deploy
+    const result = await deployContract({
+      ...defaultOptions,
       wallet: wallet,
     });
 
@@ -48,7 +60,7 @@ async function deployRegistry() {
     const { connect } = require('@permaweb/aoconnect');
     const aoconnect = connect({ MODE: 'legacy' });
 
-    const testResult = await aoconnect.dryRun({
+    const testResult = await aoconnect.dryrun({
       Target: result.processId,
       Action: 'Info',
     });

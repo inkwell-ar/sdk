@@ -55,7 +55,7 @@ export class BlogRegistrySDK {
    * Get all blogs a wallet has permissions for
    */
   async getWalletBlogs(wallet: string): Promise<BlogPermission[]> {
-    const result = await this.aoconnect.dryRun({
+    const result = await this.aoconnect.dryrun({
       Target: this.registryProcessId,
       Action: 'Get-Wallet-Blogs',
       Tags: [
@@ -75,7 +75,7 @@ export class BlogRegistrySDK {
    * Get all wallets with permissions for a specific blog
    */
   async getBlogWallets(blogId: string): Promise<WalletPermission[]> {
-    const result = await this.aoconnect.dryRun({
+    const result = await this.aoconnect.dryrun({
       Target: this.registryProcessId,
       Action: 'Get-Blog-Wallets',
       Tags: [
@@ -99,7 +99,7 @@ export class BlogRegistrySDK {
     blogId: string,
     role: string
   ): Promise<boolean> {
-    const result = await this.aoconnect.dryRun({
+    const result = await this.aoconnect.dryrun({
       Target: this.registryProcessId,
       Action: 'Check-Wallet-Role',
       Tags: [
@@ -121,7 +121,7 @@ export class BlogRegistrySDK {
    * Get registry statistics
    */
   async getRegistryStats(): Promise<RegistryStats> {
-    const result = await this.aoconnect.dryRun({
+    const result = await this.aoconnect.dryrun({
       Target: this.registryProcessId,
       Action: 'Get-Registry-Stats'
     });
