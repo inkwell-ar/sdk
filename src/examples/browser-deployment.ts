@@ -1,18 +1,18 @@
 import { InkwellBlogSDK, BlogRegistrySDK } from '../index';
 
 /**
- * Example of deploying a blog in a browser environment
+ * Example of deploying a blog using aoconnect
  * This works in both browser and Node.js environments
  */
 export async function browserDeploymentExample() {
   try {
-    console.log('🚀 Starting browser deployment example...');
+    console.log('🚀 Starting aoconnect deployment example...');
 
-    // Deploy a new blog (works in browser!)
+    // Deploy a new blog (works in all environments!)
     // No wallet needed if browser wallet is connected
     console.log('📝 Deploying new blog...');
     const result = await InkwellBlogSDK.deploy({
-      name: 'My Browser Blog'
+      name: 'My Blog'
       // wallet: wallet // Optional - will use browser wallet if not provided
     });
 
@@ -45,17 +45,17 @@ export async function browserDeploymentExample() {
     const canAdmin = await registry.canAdminBlog('deploying-wallet-address', result.processId);
     console.log('📋 Can Admin:', canAdmin);
 
-    console.log('🎉 Browser deployment example completed successfully!');
+    console.log('🎉 Aoconnect deployment example completed successfully!');
     return result;
 
   } catch (error) {
-    console.error('❌ Browser deployment example failed:', error);
+    console.error('❌ Aoconnect deployment example failed:', error);
     throw error;
   }
 }
 
 /**
- * Example of using an existing blog in a browser environment
+ * Example of using an existing blog
  */
 export async function existingBlogExample(processId: string) {
   try {
