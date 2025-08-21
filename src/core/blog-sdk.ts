@@ -85,6 +85,7 @@ export class InkwellBlogSDK implements BlogSDK {
   static async deploy(options: DeployOptions = {}): Promise<DeployResult> {
     try {
       // Check if registry is configured
+      // @ts-ignore
       if (BLOG_REGISTRY_PROCESS_ID === 'YOUR_REGISTRY_PROCESS_ID_HERE') {
         throw new Error('Registry process ID not configured. Please run the deployment script first: npm run deploy:registry');
       }
