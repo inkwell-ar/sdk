@@ -11,6 +11,7 @@
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
     "deploy-blog": "ts-node scripts/deploy.ts",
+    "deploy:registry": "ts-node scripts/deploy-registry.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

@@ -9,6 +9,7 @@ A TypeScript SDK for interacting with the Inkwell Blog CRUD AO process using aoc
 - 👥 **User Management**: Add/remove editors and admins
 - 🎨 **Blog Customization**: Set blog title, description, and logo
 - 🚀 **Easy Deployment**: Deploy your own blog process with one command
+- 🔗 **Blog Registry**: Centralized permission tracking across multiple blogs
 - ✅ **Type Safety**: Full TypeScript support with comprehensive type definitions
 - 🛡️ **Input Validation**: Built-in validation for all inputs
 - 🔄 **Error Handling**: Comprehensive error handling and response parsing
@@ -27,19 +28,46 @@ yarn add @inkwell.ar/sdk
 
 ## Quick Start
 
+### 1. Deploy the Blog Registry (One-time setup)
+
+```bash
+npm run deploy:registry
+```
+
+### 2. Deploy a Blog
+
 ```typescript
 import { InkwellBlogSDK } from '@inkwell.ar/sdk';
 
-// Initialize the SDK
-const blogSDK = new InkwellBlogSDK({
-  processId: 'your-ao-process-id-here'
+// Deploy a new blog (automatically configured with registry)
+const result = await InkwellBlogSDK.deploy({
+  name: 'my-blog'
 });
+
+console.log('Blog deployed:', result.processId);
+```
+
+### 3. Use the Blog
+
+```typescript
+import { InkwellBlogSDK, BlogRegistrySDK } from '@inkwell.ar/sdk';
+
+// Initialize the blog SDK
+const blogSDK = new InkwellBlogSDK({
+  processId: result.processId
+});
+
+// Initialize the registry SDK
+const registry = new BlogRegistrySDK();
 
 // Get all posts
 const response = await blogSDK.getAllPosts({ ordered: true });
 if (response.success) {
   console.log('Posts:', response.data);
 }
+
+// Check user permissions
+const canEdit = await registry.canEditBlog('wallet-address', result.processId);
 ```
 
 ## API Reference

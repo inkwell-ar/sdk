@@ -14,6 +14,10 @@ AccessControl.init(Owner, Owner, false)
 AccessControl.create_role(Owner, AccessControl.ROLES.EDITOR, AccessControl.ROLES.DEFAULT_ADMIN)
 AccessControl.grant_role(Owner, AccessControl.ROLES.EDITOR, Owner)
 
+-- Registry integration
+local RegistryProcess = "YOUR_REGISTRY_PROCESS_ID" -- Replace with actual registry process ID
+local BlogID = ao.id -- Use the current process ID as the blog ID
+
 -- Posts storage
 Posts = Posts or {}
 Next_id = Next_id or 1
@@ -233,6 +237,64 @@ local function safe_json_decode(data)
     return result, nil
 end
 
+-- Registry sync helpers
+local function sync_wallet_to_registry(wallet, roles)
+    if not RegistryProcess or RegistryProcess == "YOUR_REGISTRY_PROCESS_ID" then
+        return true, nil -- Skip if registry not configured
+    end
+    
+    local data = {
+        wallet = wallet,
+        roles = roles
+    }
+    
+    -- Send message to registry process
+    ao.send({
+        Target = RegistryProcess,
+        Action = "Register-Wallet-Permissions",
+        Data = json.encode(data)
+    })
+    
+    return true, nil
+end
+
+local function remove_wallet_from_registry(wallet)
+    if not RegistryProcess or RegistryProcess == "YOUR_REGISTRY_PROCESS_ID" then
+        return true, nil -- Skip if registry not configured
+    end
+    
+    local data = {
+        wallet = wallet
+    }
+    
+    -- Send message to registry process
+    ao.send({
+        Target = RegistryProcess,
+        Action = "Remove-Wallet-Permissions",
+        Data = json.encode(data)
+    })
+    
+    return true, nil
+end
+
+local function get_wallet_roles_for_registry(wallet)
+    local roles = {}
+    
+    -- Check for DEFAULT_ADMIN role
+    local is_admin, _ = AccessControl.has_role(wallet, AccessControl.ROLES.DEFAULT_ADMIN)
+    if is_admin then
+        table.insert(roles, AccessControl.ROLES.DEFAULT_ADMIN)
+    end
+    
+    -- Check for EDITOR role
+    local is_editor, _ = AccessControl.has_role(wallet, AccessControl.ROLES.EDITOR)
+    if is_editor then
+        table.insert(roles, AccessControl.ROLES.EDITOR)
+    end
+    
+    return roles
+end
+
 ----------------------------------
 --- Message Helper
 local function reply_msg(msg, success, data_or_error)
@@ -289,6 +351,16 @@ local function update_roles(msg, role_action, role)
             local success, err = role_action(msg.From, role, account)
             table.insert(results, { account, success, err })
             global_success = global_success and success
+            
+            -- Sync with registry after role change
+            if success then
+                local roles = get_wallet_roles_for_registry(account)
+                if #roles > 0 then
+                    sync_wallet_to_registry(account, roles)
+                else
+                    remove_wallet_from_registry(account)
+                end
+            end
         end
     end
 
@@ -539,6 +611,45 @@ Handlers.add(
         local success, result_or_error = set_details(data)
 
         reply_msg(msg, success, result_or_error)
+    end)
+)
+
+Handlers.add(
+    "Sync-With-Registry",
+    Handlers.utils.hasMatchingTag("Action", "Sync-With-Registry"),
+    safe_handler(function(msg)
+        local is_admin, error = AccessControl.only_role(msg.From, AccessControl.ROLES.DEFAULT_ADMIN)
+
+        if not is_admin then
+            reply_msg(msg, false, error)
+            return
+        end
+
+        local sync_results = {}
+        
+        -- Get all roles and sync them
+        for _, role in pairs(AccessControl.ROLES) do
+            local members, err = AccessControl.get_role_members(role)
+            if members then
+                for _, wallet in ipairs(members) do
+                    local roles = get_wallet_roles_for_registry(wallet)
+                    if #roles > 0 then
+                        sync_wallet_to_registry(wallet, roles)
+                        table.insert(sync_results, {
+                            wallet = wallet,
+                            roles = roles,
+                            synced = true
+                        })
+                    end
+                end
+            end
+        end
+
+        reply_msg(msg, true, {
+            message = "Sync completed",
+            synced_wallets = #sync_results,
+            results = sync_results
+        })
     end)
 )
 
