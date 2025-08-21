@@ -35,7 +35,7 @@ The SDK is designed to work in both browser and Node.js environments:
 - **✅ Node.js**: Full functionality including deployment
 - **✅ Both**: Read operations, blog interactions, registry queries
 
-The SDK automatically detects the environment and uses the appropriate deployment method.
+The SDK uses aoconnect for deployment in all environments, ensuring consistent behavior.
 
 ## Quick Start
 
@@ -77,7 +77,7 @@ const userBlogs = await registry.getWalletBlogs('wallet-address');
 
 ### Node.js Environment
 
-For Node.js environments (same functionality as browser):
+For Node.js environments (same functionality as browser, uses aoconnect):
 
 #### 1. Deploy the Blog Registry (One-time setup)
 
@@ -719,11 +719,11 @@ See `src/examples/basic-registry-usage.ts` for examples of:
 - Permission checking before actions
 - Registry statistics
 
-### Browser Deployment
+### Aoconnect Deployment
 
 See `src/examples/browser-deployment.ts` for examples of:
-- Deploying blogs in browser environments
-- Using existing blogs in browsers
+- Deploying blogs using aoconnect
+- Using existing blogs
 - Cross-environment compatibility
 
 ## Development
