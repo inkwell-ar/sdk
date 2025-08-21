@@ -57,7 +57,8 @@
   "files": [
     "dist/**/*",
     "README.md",
-    "lua-process/**/*"
+    "lua-process/**/*",
+    "BLOG_REGISTRY_README.md"
   ],
   "publishConfig": {
     "access": "public"

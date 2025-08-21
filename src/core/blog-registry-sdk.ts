@@ -33,17 +33,22 @@ export interface SyncResponse {
 }
 
 export class BlogRegistrySDK {
-     private aoconnect: any;
-     private registryProcessId: string;
+  private aoconnect: any;
+  private registryProcessId: string;
 
-   constructor(ao?: any, registryProcessId?: string) {
-     this.aoconnect = ao || connect({ MODE: 'legacy' });
-     this.registryProcessId = registryProcessId || BLOG_REGISTRY_PROCESS_ID;
-     
-     if (this.registryProcessId === 'YOUR_REGISTRY_PROCESS_ID_HERE') {
-       throw new Error('Registry process ID not configured. Please run the deployment script first: npm run deploy:registry');
-     }
-   }
+  constructor(ao?: any, registryProcessId?: string) {
+    this.aoconnect = ao || connect({ MODE: 'legacy' });
+    this.registryProcessId = registryProcessId || BLOG_REGISTRY_PROCESS_ID;
+
+    if (this.registryProcessId === 'YOUR_REGISTRY_PROCESS_ID_HERE') {
+      throw new Error(
+        'Registry process ID not configured. Please run the deployment script first: npm run deploy:registry'
+      );
+    }
+
+    // Debug: Log the registry process ID
+    console.log('🔧 Registry Process ID:', this.registryProcessId);
+  }
 
   /**
    * Note: Write operations (register, remove, update) are only available to blog processes
@@ -56,11 +61,12 @@ export class BlogRegistrySDK {
    */
   async getWalletBlogs(wallet: string): Promise<BlogPermission[]> {
     const result = await this.aoconnect.dryrun({
-      Target: this.registryProcessId,
-      Action: 'Get-Wallet-Blogs',
-      Tags: [
+      process: this.registryProcessId,
+      data: '',
+      tags: [
+        { name: 'Action', value: 'Get-Wallet-Blogs' },
         { name: 'Wallet-Address', value: wallet }
-      ]
+      ],
     });
 
     const response = JSON.parse(result.Messages[0].Data);
@@ -76,11 +82,12 @@ export class BlogRegistrySDK {
    */
   async getBlogWallets(blogId: string): Promise<WalletPermission[]> {
     const result = await this.aoconnect.dryrun({
-      Target: this.registryProcessId,
-      Action: 'Get-Blog-Wallets',
-      Tags: [
+      process: this.registryProcessId,
+      data: '',
+      tags: [
+        { name: 'Action', value: 'Get-Blog-Wallets' },
         { name: 'Blog-ID', value: blogId }
-      ]
+      ],
     });
 
     const response = JSON.parse(result.Messages[0].Data);
@@ -100,13 +107,14 @@ export class BlogRegistrySDK {
     role: string
   ): Promise<boolean> {
     const result = await this.aoconnect.dryrun({
-      Target: this.registryProcessId,
-      Action: 'Check-Wallet-Role',
-      Tags: [
+      process: this.registryProcessId,
+      data: '',
+      tags: [
+        { name: 'Action', value: 'Check-Wallet-Role' },
         { name: 'Wallet-Address', value: wallet },
         { name: 'Blog-ID', value: blogId },
-        { name: 'Role', value: role }
-      ]
+        { name: 'Role', value: role },
+      ],
     });
 
     const response = JSON.parse(result.Messages[0].Data);
@@ -122,8 +130,11 @@ export class BlogRegistrySDK {
    */
   async getRegistryStats(): Promise<RegistryStats> {
     const result = await this.aoconnect.dryrun({
-      Target: this.registryProcessId,
-      Action: 'Get-Registry-Stats'
+      process: this.registryProcessId,
+      data: '',
+      tags: [
+        { name: 'Action', value: 'Get-Registry-Stats' }
+      ],
     });
 
     const response = JSON.parse(result.Messages[0].Data);
@@ -145,9 +156,7 @@ export class BlogRegistrySDK {
    */
   async getAdminBlogs(wallet: string): Promise<BlogPermission[]> {
     const allBlogs = await this.getWalletBlogs(wallet);
-    return allBlogs.filter(blog => 
-      blog.roles.includes('DEFAULT_ADMIN_ROLE')
-    );
+    return allBlogs.filter((blog) => blog.roles.includes('DEFAULT_ADMIN_ROLE'));
   }
 
   /**
@@ -155,8 +164,10 @@ export class BlogRegistrySDK {
    */
   async getEditableBlogs(wallet: string): Promise<BlogPermission[]> {
     const allBlogs = await this.getWalletBlogs(wallet);
-    return allBlogs.filter(blog => 
-      blog.roles.includes('EDITOR_ROLE') || blog.roles.includes('DEFAULT_ADMIN_ROLE')
+    return allBlogs.filter(
+      (blog) =>
+        blog.roles.includes('EDITOR_ROLE') ||
+        blog.roles.includes('DEFAULT_ADMIN_ROLE')
     );
   }
 
@@ -172,7 +183,11 @@ export class BlogRegistrySDK {
    */
   async canEditBlog(wallet: string, blogId: string): Promise<boolean> {
     const canEdit = await this.checkWalletRole(wallet, blogId, 'EDITOR_ROLE');
-    const canAdmin = await this.checkWalletRole(wallet, blogId, 'DEFAULT_ADMIN_ROLE');
+    const canAdmin = await this.checkWalletRole(
+      wallet,
+      blogId,
+      'DEFAULT_ADMIN_ROLE'
+    );
     return canEdit || canAdmin;
   }
 }

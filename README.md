@@ -10,6 +10,7 @@ A TypeScript SDK for interacting with the Inkwell Blog CRUD AO process using aoc
 - 🎨 **Blog Customization**: Set blog title, description, and logo
 - 🚀 **Easy Deployment**: Deploy your own blog process with one command
 - 🔗 **Blog Registry**: Centralized permission tracking across multiple blogs
+- 🔒 **Security-First**: Blog-only write access to registry, read-only SDK
 - ✅ **Type Safety**: Full TypeScript support with comprehensive type definitions
 - 🛡️ **Input Validation**: Built-in validation for all inputs
 - 🔄 **Error Handling**: Comprehensive error handling and response parsing
@@ -31,8 +32,15 @@ yarn add @inkwell.ar/sdk
 ### 1. Deploy the Blog Registry (One-time setup)
 
 ```bash
-npm run deploy:registry
+# Deploy the registry (requires wallet)
+npm run deploy:registry [wallet-path]
 ```
+
+This will:
+- Deploy the registry process to AO
+- Test the deployment
+- Save the process ID to `src/config/registry.ts`
+- Output the process ID for verification
 
 ### 2. Deploy a Blog
 
@@ -47,7 +55,7 @@ const result = await InkwellBlogSDK.deploy({
 console.log('Blog deployed:', result.processId);
 ```
 
-### 3. Use the Blog
+### 3. Use the Blog and Registry
 
 ```typescript
 import { InkwellBlogSDK, BlogRegistrySDK } from '@inkwell.ar/sdk';
@@ -57,7 +65,7 @@ const blogSDK = new InkwellBlogSDK({
   processId: result.processId
 });
 
-// Initialize the registry SDK
+// Initialize the registry SDK (uses hardcoded registry process ID)
 const registry = new BlogRegistrySDK();
 
 // Get all posts
@@ -68,6 +76,10 @@ if (response.success) {
 
 // Check user permissions
 const canEdit = await registry.canEditBlog('wallet-address', result.processId);
+const canAdmin = await registry.canAdminBlog('wallet-address', result.processId);
+
+// Get user's blogs
+const userBlogs = await registry.getWalletBlogs('wallet-address');
 ```
 
 ## API Reference
@@ -85,6 +97,30 @@ const blogSDK = new InkwellBlogSDK({
 ```
 
 **Browser Wallet Support**: In browser environments, if no wallet is provided, the SDK will automatically use `globalThis.arweaveWallet` if available.
+
+### Blog Registry SDK
+
+The registry SDK provides read-only access to the centralized permission system:
+
+```typescript
+import { BlogRegistrySDK } from '@inkwell.ar/sdk';
+
+const registry = new BlogRegistrySDK();
+
+// Check permissions
+const canEdit = await registry.canEditBlog('wallet-address', 'blog-process-id');
+const canAdmin = await registry.canAdminBlog('wallet-address', 'blog-process-id');
+
+// Get user's blogs
+const userBlogs = await registry.getWalletBlogs('wallet-address');
+const adminBlogs = await registry.getAdminBlogs('wallet-address');
+const editableBlogs = await registry.getEditableBlogs('wallet-address');
+
+// Get registry statistics
+const stats = await registry.getRegistryStats();
+```
+
+**Security Note**: The registry SDK is read-only. Only blog processes can modify permissions in the registry.
 
 ### Public Methods (No Authentication Required)
 
@@ -615,6 +651,21 @@ The SDK provides comprehensive error handling:
 All methods return an `ApiResponse` object with:
 - `success`: Boolean indicating if the operation succeeded
 - `data`: The result data or error message
+
+## Examples
+
+### Basic Usage
+
+See `src/examples/basic-usage.ts` for a complete example of deploying and using a blog with registry integration.
+
+### Registry Usage
+
+See `src/examples/basic-registry-usage.ts` for examples of:
+- Checking permissions for a specific wallet
+- Getting user's blogs (admin, editable, all)
+- Checking multiple wallets
+- Permission checking before actions
+- Registry statistics
 
 ## Development
 

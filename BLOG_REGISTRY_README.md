@@ -55,15 +55,16 @@ The Blog Registry system consists of:
 Deploy the blog registry process using the provided script:
 
 ```bash
-# Deploy the registry (this will output the process ID)
-npm run deploy:registry
+# Deploy the registry (requires wallet)
+npm run deploy:registry [wallet-path]
 ```
 
 This script will:
-- Deploy the registry process to AO
-- Test the deployment
+- Deploy the registry process to AO using ao-deploy
+- Test the deployment with a dry run
 - Save the process ID to `src/config/registry.ts`
-- Output the process ID for manual copying
+- Output the process ID for verification
+- Generate configuration files automatically
 
 ### 2. Deploy Blog Processes
 
@@ -94,6 +95,11 @@ const canAdmin = await registry.canAdminBlog('wallet-address', 'blog-process-id'
 
 // Get user's blogs
 const userBlogs = await registry.getWalletBlogs('wallet-address');
+const adminBlogs = await registry.getAdminBlogs('wallet-address');
+const editableBlogs = await registry.getEditableBlogs('wallet-address');
+
+// Get registry statistics
+const stats = await registry.getRegistryStats();
 ```
 
 ## Usage Examples
@@ -109,6 +115,9 @@ const canEdit = await registry.canEditBlog('wallet_address', 'blog_id');
 
 // Check if a wallet can admin a specific blog
 const canAdmin = await registry.canAdminBlog('wallet_address', 'blog_id');
+
+// Check specific role
+const hasEditorRole = await registry.checkWalletRole('wallet_address', 'blog_id', 'EDITOR_ROLE');
 ```
 
 ### User Dashboard
@@ -147,6 +156,17 @@ const stats = await registry.getRegistryStats();
 console.log(`Total wallets: ${stats.wallet_count}`);
 console.log(`Total blogs: ${stats.blog_count}`);
 console.log(`Total permissions: ${stats.total_permissions}`);
+console.log(`Registry version: ${stats.version}`);
+```
+
+### Get Blog Wallets
+
+```typescript
+// Get all wallets with access to a specific blog
+const wallets = await registry.getBlogWallets('blog_process_id');
+wallets.forEach(wallet => {
+  console.log(`Wallet: ${wallet.wallet}, Roles: ${wallet.roles.join(', ')}`);
+});
 ```
 
 ## API Reference

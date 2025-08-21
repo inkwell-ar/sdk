@@ -115,6 +115,29 @@ export class InkwellBlogSDK implements BlogSDK {
         wallet: options.wallet,
       });
 
+      // Sync initial permissions with registry
+      if (options.wallet && result.processId) {
+        try {
+          const aoconnect = connect({ MODE: 'legacy' });
+          const signer = createDataItemSigner(options.wallet);
+          
+          // Send sync message to the newly deployed blog
+          await aoconnect.message({
+            process: result.processId,
+            signer: signer,
+            tags: [
+              { name: 'Action', value: 'Sync-With-Registry' }
+            ],
+            data: ''
+          });
+
+          console.log('✅ Initial permissions synced with registry');
+        } catch (syncError) {
+          console.warn('⚠️ Failed to sync initial permissions with registry:', syncError);
+          // Don't fail the deployment if sync fails
+        }
+      }
+
       return {
         processId: result.processId,
         messageId: result.messageId,
