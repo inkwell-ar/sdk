@@ -5,6 +5,7 @@ import {
   BlogDetails,
   RoleUpdateResult,
 } from '../index';
+import { Role } from '../types';
 import { BLOG_PROCESS_ID, EDITOR_ADDRESS } from './utils/constants';
 import { loadOrGenerateWallet } from './utils/wallet';
 
@@ -30,7 +31,7 @@ async function authenticatedUsage() {
       console.log(`User roles: ${roles.join(', ')}`);
 
       // Check if user has admin role
-      if (roles.includes('DEFAULT_ADMIN_ROLE')) {
+      if (roles.includes(Role.ADMIN)) {
         console.log('User has admin role - can manage roles');
         await adminOperationsWithWallet(blogSDK, wallet);
       } else {
@@ -38,7 +39,7 @@ async function authenticatedUsage() {
       }
 
       // Check if user has editor role
-      if (roles.includes('EDITOR_ROLE')) {
+      if (roles.includes(Role.EDITOR)) {
         console.log('User has editor role - can create/edit posts');
         await createPostWithWallet(blogSDK, wallet);
       } else {

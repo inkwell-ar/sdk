@@ -1,9 +1,10 @@
 import { connect } from '@permaweb/aoconnect';
 import { BLOG_REGISTRY_PROCESS_ID } from '../config/registry';
+import { Role } from '../types';
 
 export interface BlogPermission {
   blog_id: string;
-  roles: string[];
+  roles: Role[];
   last_updated: number;
 }
 
@@ -65,7 +66,7 @@ export class BlogRegistrySDK {
       data: '',
       tags: [
         { name: 'Action', value: 'Get-Wallet-Blogs' },
-        { name: 'Wallet-Address', value: wallet }
+        { name: 'Wallet-Address', value: wallet },
       ],
     });
 
@@ -86,7 +87,7 @@ export class BlogRegistrySDK {
       data: '',
       tags: [
         { name: 'Action', value: 'Get-Blog-Wallets' },
-        { name: 'Blog-ID', value: blogId }
+        { name: 'Blog-ID', value: blogId },
       ],
     });
 
@@ -132,9 +133,7 @@ export class BlogRegistrySDK {
     const result = await this.aoconnect.dryrun({
       process: this.registryProcessId,
       data: '',
-      tags: [
-        { name: 'Action', value: 'Get-Registry-Stats' }
-      ],
+      tags: [{ name: 'Action', value: 'Get-Registry-Stats' }],
     });
 
     const response = JSON.parse(result.Messages[0].Data);
@@ -156,7 +155,7 @@ export class BlogRegistrySDK {
    */
   async getAdminBlogs(wallet: string): Promise<BlogPermission[]> {
     const allBlogs = await this.getWalletBlogs(wallet);
-    return allBlogs.filter((blog) => blog.roles.includes('DEFAULT_ADMIN_ROLE'));
+    return allBlogs.filter((blog) => blog.roles.includes(Role.ADMIN));
   }
 
   /**
@@ -166,8 +165,7 @@ export class BlogRegistrySDK {
     const allBlogs = await this.getWalletBlogs(wallet);
     return allBlogs.filter(
       (blog) =>
-        blog.roles.includes('EDITOR_ROLE') ||
-        blog.roles.includes('DEFAULT_ADMIN_ROLE')
+        blog.roles.includes(Role.EDITOR) || blog.roles.includes(Role.ADMIN)
     );
   }
 
@@ -175,19 +173,15 @@ export class BlogRegistrySDK {
    * Check if a wallet can admin a specific blog
    */
   async canAdminBlog(wallet: string, blogId: string): Promise<boolean> {
-    return this.checkWalletRole(wallet, blogId, 'DEFAULT_ADMIN_ROLE');
+    return this.checkWalletRole(wallet, blogId, Role.ADMIN);
   }
 
   /**
    * Check if a wallet can edit a specific blog
    */
   async canEditBlog(wallet: string, blogId: string): Promise<boolean> {
-    const canEdit = await this.checkWalletRole(wallet, blogId, 'EDITOR_ROLE');
-    const canAdmin = await this.checkWalletRole(
-      wallet,
-      blogId,
-      'DEFAULT_ADMIN_ROLE'
-    );
+    const canEdit = await this.checkWalletRole(wallet, blogId, Role.EDITOR);
+    const canAdmin = await this.checkWalletRole(wallet, blogId, Role.ADMIN);
     return canEdit || canAdmin;
   }
 }

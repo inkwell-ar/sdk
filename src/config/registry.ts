@@ -3,14 +3,15 @@
 // To deploy a new registry, run: npm run deploy:registry
 
 // Default registry process ID (replace with actual deployed process ID)
-export const BLOG_REGISTRY_PROCESS_ID = 'p2un0gLaXvUFc8Sm1ArASEPWRNVGzrYkBSr_KHgeLRg';
+export const BLOG_REGISTRY_PROCESS_ID =
+  'p2un0gLaXvUFc8Sm1ArASEPWRNVGzrYkBSr_KHgeLRg';
 
 // Registry configuration
 export const REGISTRY_CONFIG = {
   processId: BLOG_REGISTRY_PROCESS_ID,
   name: 'Inkwell Blog Registry',
   version: '1.0.0',
-  deployedAt: 'Not deployed yet'
+  deployedAt: 'Not deployed yet',
 };
 
 // Registry actions
@@ -21,15 +22,9 @@ export const REGISTRY_ACTIONS = {
   GET_BLOG_WALLETS: 'Get-Blog-Wallets',
   CHECK_WALLET_ROLE: 'Check-Wallet-Role',
   GET_REGISTRY_STATS: 'Get-Registry-Stats',
-  
+
   // Blog-only write actions
   REGISTER_WALLET_PERMISSIONS: 'Register-Wallet-Permissions',
   REMOVE_WALLET_PERMISSIONS: 'Remove-Wallet-Permissions',
-  UPDATE_WALLET_ROLES: 'Update-Wallet-Roles'
-} as const;
-
-// Valid roles
-export const VALID_ROLES = {
-  DEFAULT_ADMIN: 'DEFAULT_ADMIN_ROLE',
-  EDITOR: 'EDITOR_ROLE'
+  UPDATE_WALLET_ROLES: 'Update-Wallet-Roles',
 } as const;

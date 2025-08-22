@@ -8,6 +8,7 @@ import {
 } from '../index';
 import { OWNER_ADDRESS } from '../examples/utils/constants';
 import { loadOrGenerateWallet } from '../examples/utils/wallet';
+import { Role } from '../types';
 
 // Mock aoconnect for testing
 const mockAoconnect = {
@@ -215,7 +216,7 @@ describe('InkwellBlogSDK', () => {
           {
             Data: JSON.stringify({
               success: true,
-              data: ['EDITOR_ROLE', 'DEFAULT_ADMIN_ROLE'],
+              data: [Role.EDITOR, Role.ADMIN],
             }),
           },
         ],
@@ -226,8 +227,8 @@ describe('InkwellBlogSDK', () => {
       const result = await blogSDK.getUserRoles(OWNER_ADDRESS);
 
       expect(result.success).toBe(true);
-      expect(result.data).toContain('EDITOR_ROLE');
-      expect(result.data).toContain('DEFAULT_ADMIN_ROLE');
+      expect(result.data).toContain(Role.EDITOR);
+      expect(result.data).toContain(Role.ADMIN);
     });
   });
 
@@ -270,7 +271,9 @@ describe('InkwellBlogSDK', () => {
 
       expect(response.success).toBe(true);
       // response.data can be either a BlogPost object or a string message
-      expect(typeof response.data === 'string' || typeof response.data === 'object').toBe(true);
+      expect(
+        typeof response.data === 'string' || typeof response.data === 'object'
+      ).toBe(true);
       expect(mockAoconnect.message).toHaveBeenCalledWith({
         process: 'test-process-id',
         tags: [{ name: 'Action', value: 'Create-Post' }],
@@ -323,7 +326,9 @@ describe('InkwellBlogSDK', () => {
 
       expect(response.success).toBe(true);
       // response.data can be either RoleUpdateResult[] or a string message
-      expect(typeof response.data === 'string' || Array.isArray(response.data)).toBe(true);
+      expect(
+        typeof response.data === 'string' || Array.isArray(response.data)
+      ).toBe(true);
       expect(mockAoconnect.message).toHaveBeenCalledWith({
         process: 'test-process-id',
         tags: [{ name: 'Action', value: 'Add-Editors' }],
@@ -385,7 +390,9 @@ describe('InkwellBlogSDK', () => {
 
       expect(response.success).toBe(true);
       // response.data can be either BlogDetails object or a string message
-      expect(typeof response.data === 'string' || typeof response.data === 'object').toBe(true);
+      expect(
+        typeof response.data === 'string' || typeof response.data === 'object'
+      ).toBe(true);
       expect(mockAoconnect.message).toHaveBeenCalledWith({
         process: 'test-process-id',
         tags: [{ name: 'Action', value: 'Set-Blog-Details' }],

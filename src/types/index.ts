@@ -164,10 +164,19 @@ export interface BlogSDK {
   }): Promise<ApiResponse<BlogDetails | string>>;
 }
 
+// Valid roles
+export const Role = {
+  ADMIN: 'DEFAULT_ADMIN_ROLE',
+  EDITOR: 'EDITOR_ROLE',
+} as const;
+
+// Role type
+export type Role = (typeof Role)[keyof typeof Role];
+
 // Blog Registry Types
 export interface BlogPermission {
   blog_id: string;
-  roles: string[];
+  roles: Role[];
   last_updated: number;
 }
 

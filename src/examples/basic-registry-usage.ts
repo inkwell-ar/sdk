@@ -1,4 +1,5 @@
 import { BlogRegistrySDK } from '../index';
+import { Role } from '../types';
 
 // Basic registry usage example - demonstrates read-only functions
 async function basicRegistryUsage() {
@@ -77,18 +78,16 @@ async function basicRegistryUsage() {
     const hasEditorRole = await registry.checkWalletRole(
       walletAddress,
       exampleBlogId,
-      'EDITOR_ROLE'
+      Role.EDITOR
     );
     const hasAdminRole = await registry.checkWalletRole(
       walletAddress,
       exampleBlogId,
-      'DEFAULT_ADMIN_ROLE'
+      Role.ADMIN
     );
 
-    console.log(`   Has EDITOR_ROLE: ${hasEditorRole ? '✅ Yes' : '❌ No'}`);
-    console.log(
-      `   Has DEFAULT_ADMIN_ROLE: ${hasAdminRole ? '✅ Yes' : '❌ No'}`
-    );
+    console.log(`   Has ${Role.EDITOR}: ${hasEditorRole ? '✅ Yes' : '❌ No'}`);
+    console.log(`   Has ${Role.ADMIN}: ${hasAdminRole ? '✅ Yes' : '❌ No'}`);
     console.log('');
 
     // 6. Get registry statistics
