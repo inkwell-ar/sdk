@@ -39,8 +39,11 @@ export class InkwellBlogSDK implements BlogSDK {
     this.processId = config.processId;
     this.aoconnect = config.aoconnect || connect({ MODE: 'legacy' });
     this.logger = new Logger({ level: config.logLevel || LogLevel.WARN });
-    
-    this.logger.info(LogGroup.SDK, `Initialized InkwellBlogSDK with process ID: ${this.processId}`);
+
+    this.logger.info(
+      LogGroup.SDK,
+      `Initialized InkwellBlogSDK with process ID: ${this.processId}`
+    );
   }
 
   /**
@@ -61,7 +64,10 @@ export class InkwellBlogSDK implements BlogSDK {
       return createDataItemSigner((globalThis as any).arweaveWallet);
     }
 
-    this.logger.error(LogGroup.AUTH, 'No wallet available for signing - neither provided nor browser wallet found');
+    this.logger.error(
+      LogGroup.AUTH,
+      'No wallet available for signing - neither provided nor browser wallet found'
+    );
     throw new Error(
       'No wallet provided and no browser wallet available. Please provide a wallet or connect a browser wallet.'
     );
@@ -72,7 +78,10 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   private async getMessageResult(messageId: string): Promise<any> {
     try {
-      this.logger.debug(LogGroup.API, `Getting message result for ID: ${messageId}`);
+      this.logger.debug(
+        LogGroup.API,
+        `Getting message result for ID: ${messageId}`
+      );
       const resultData = await this.aoconnect.result({
         message: messageId,
         process: this.processId,
@@ -80,7 +89,11 @@ export class InkwellBlogSDK implements BlogSDK {
       this.logger.debug(LogGroup.API, `Successfully retrieved message result`);
       return resultData;
     } catch (error) {
-      this.logger.error(LogGroup.API, `Failed to get message result for ${messageId}`, error);
+      this.logger.error(
+        LogGroup.API,
+        `Failed to get message result for ${messageId}`,
+        error
+      );
       throw new Error(
         `Failed to get message result: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -94,13 +107,19 @@ export class InkwellBlogSDK implements BlogSDK {
   static async deploy(options: DeployOptions = {}): Promise<DeployResult> {
     const logger = new Logger({ level: LogLevel.INFO });
     try {
-      logger.info(LogGroup.DEPLOY, `Starting blog deployment with name: ${options.name || 'unnamed'}`);
+      logger.info(
+        LogGroup.DEPLOY,
+        `Starting blog deployment with name: ${options.name || 'unnamed'}`
+      );
       // Use browser deployment for all environments
       const result = await deployBlogInBrowser({
         name: options.name,
         wallet: options.wallet,
       });
-      logger.info(LogGroup.DEPLOY, `Blog deployed successfully with process ID: ${result.processId}`);
+      logger.info(
+        LogGroup.DEPLOY,
+        `Blog deployed successfully with process ID: ${result.processId}`
+      );
       return result;
     } catch (error) {
       logger.error(LogGroup.DEPLOY, `Failed to deploy blog process`, error);
@@ -140,7 +159,10 @@ export class InkwellBlogSDK implements BlogSDK {
     options: GetPostsOptions = {}
   ): Promise<ApiResponse<BlogPost[]>> {
     try {
-      this.logger.debug(LogGroup.API, `Getting all posts with options: ${JSON.stringify(options)}`);
+      this.logger.debug(
+        LogGroup.API,
+        `Getting all posts with options: ${JSON.stringify(options)}`
+      );
       const tags = [{ name: 'Action', value: 'Get-All-Posts' }];
 
       if (options.ordered !== undefined) {
@@ -154,7 +176,10 @@ export class InkwellBlogSDK implements BlogSDK {
 
       const response = await this.parseDryrunResponse(result);
       if (response.success && Array.isArray(response.data)) {
-        this.logger.info(LogGroup.API, `Retrieved ${response.data.length} posts`);
+        this.logger.info(
+          LogGroup.API,
+          `Retrieved ${response.data.length} posts`
+        );
       }
       return response;
     } catch (error) {
@@ -185,11 +210,18 @@ export class InkwellBlogSDK implements BlogSDK {
 
       const response = await this.parseDryrunResponse(result);
       if (response.success) {
-        this.logger.debug(LogGroup.API, `Successfully retrieved post ${options.id}`);
+        this.logger.debug(
+          LogGroup.API,
+          `Successfully retrieved post ${options.id}`
+        );
       }
       return response;
     } catch (error) {
-      this.logger.error(LogGroup.API, `Failed to get post ${options.id}`, error);
+      this.logger.error(
+        LogGroup.API,
+        `Failed to get post ${options.id}`,
+        error
+      );
       return {
         success: false,
         data: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -202,7 +234,10 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   async getUserRoles(walletAddress: string): Promise<ApiResponse<string[]>> {
     try {
-      this.logger.debug(LogGroup.AUTH, `Getting roles for wallet: ${walletAddress}`);
+      this.logger.debug(
+        LogGroup.AUTH,
+        `Getting roles for wallet: ${walletAddress}`
+      );
       const result = await this.aoconnect.dryrun({
         process: this.processId,
         tags: [
@@ -213,11 +248,18 @@ export class InkwellBlogSDK implements BlogSDK {
 
       const response = await this.parseMessageResponse(result);
       if (response.success && Array.isArray(response.data)) {
-        this.logger.info(LogGroup.AUTH, `User has ${response.data.length} roles: ${response.data.join(', ')}`);
+        this.logger.info(
+          LogGroup.AUTH,
+          `User has ${response.data.length} roles: ${response.data.join(', ')}`
+        );
       }
       return response;
     } catch (error) {
-      this.logger.error(LogGroup.AUTH, `Failed to get user roles for ${walletAddress}`, error);
+      this.logger.error(
+        LogGroup.AUTH,
+        `Failed to get user roles for ${walletAddress}`,
+        error
+      );
       return {
         success: false,
         data: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -244,23 +286,35 @@ export class InkwellBlogSDK implements BlogSDK {
       });
 
       if (!messageId) {
-        this.logger.error(LogGroup.API, 'Create-Post message failed - no message ID returned');
+        this.logger.error(
+          LogGroup.API,
+          'Create-Post message failed - no message ID returned'
+        );
         return {
           success: false,
           data: 'Create-Post message failed',
         };
       }
 
-      this.logger.debug(LogGroup.API, `Post creation message sent with ID: ${messageId}`);
+      this.logger.debug(
+        LogGroup.API,
+        `Post creation message sent with ID: ${messageId}`
+      );
 
       // Try to get the result of the message
       try {
         const resultData = await this.getMessageResult(messageId);
-        const response = await this.parseMessageResponse(resultData, options.wallet);
+        const response = await this.parseMessageResponse(
+          resultData,
+          options.wallet
+        );
         this.logger.info(LogGroup.API, 'Post created successfully');
         return response;
       } catch (resultError) {
-        this.logger.warn(LogGroup.API, `Could not retrieve post creation result, but message was sent: ${messageId}`);
+        this.logger.warn(
+          LogGroup.API,
+          `Could not retrieve post creation result, but message was sent: ${messageId}`
+        );
         // If we can't get the result, return a success message with the message ID
         return {
           success: true,
@@ -283,10 +337,16 @@ export class InkwellBlogSDK implements BlogSDK {
     options: UpdatePostOptions
   ): Promise<ApiResponse<BlogPost | string>> {
     try {
-      this.logger.info(LogGroup.API, `Updating post ${options.id}: ${options.data.title}`);
+      this.logger.info(
+        LogGroup.API,
+        `Updating post ${options.id}: ${options.data.title}`
+      );
       validatePostId(options.id);
       validateUpdatePostData(options.data);
-      this.logger.debug(LogGroup.VALIDATION, 'Post update data validation passed');
+      this.logger.debug(
+        LogGroup.VALIDATION,
+        'Post update data validation passed'
+      );
 
       const messageId = await this.aoconnect.message({
         process: this.processId,
@@ -299,30 +359,49 @@ export class InkwellBlogSDK implements BlogSDK {
       });
 
       if (!messageId) {
-        this.logger.error(LogGroup.API, 'Update-Post message failed - no message ID returned');
+        this.logger.error(
+          LogGroup.API,
+          'Update-Post message failed - no message ID returned'
+        );
         return {
           success: false,
           data: 'Update-Post message failed',
         };
       }
 
-      this.logger.debug(LogGroup.API, `Post update message sent with ID: ${messageId}`);
+      this.logger.debug(
+        LogGroup.API,
+        `Post update message sent with ID: ${messageId}`
+      );
 
       // Try to get the result of the message
       try {
         const resultData = await this.getMessageResult(messageId);
-        const response = await this.parseMessageResponse(resultData, options.wallet);
-        this.logger.info(LogGroup.API, `Post ${options.id} updated successfully`);
+        const response = await this.parseMessageResponse(
+          resultData,
+          options.wallet
+        );
+        this.logger.info(
+          LogGroup.API,
+          `Post ${options.id} updated successfully`
+        );
         return response;
       } catch (resultError) {
-        this.logger.warn(LogGroup.API, `Could not retrieve post update result, but message was sent: ${messageId}`);
+        this.logger.warn(
+          LogGroup.API,
+          `Could not retrieve post update result, but message was sent: ${messageId}`
+        );
         return {
           success: true,
           data: `Post updated successfully. Message ID: ${messageId}`,
         };
       }
     } catch (error) {
-      this.logger.error(LogGroup.API, `Failed to update post ${options.id}`, error);
+      this.logger.error(
+        LogGroup.API,
+        `Failed to update post ${options.id}`,
+        error
+      );
       return {
         success: false,
         data: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -337,7 +416,10 @@ export class InkwellBlogSDK implements BlogSDK {
     try {
       this.logger.info(LogGroup.API, `Deleting post ${options.id}`);
       validatePostId(options.id);
-      this.logger.debug(LogGroup.VALIDATION, 'Post ID validation passed for deletion');
+      this.logger.debug(
+        LogGroup.VALIDATION,
+        'Post ID validation passed for deletion'
+      );
 
       const messageId = await this.aoconnect.message({
         process: this.processId,
@@ -349,30 +431,49 @@ export class InkwellBlogSDK implements BlogSDK {
       });
 
       if (!messageId) {
-        this.logger.error(LogGroup.API, 'Delete-Post message failed - no message ID returned');
+        this.logger.error(
+          LogGroup.API,
+          'Delete-Post message failed - no message ID returned'
+        );
         return {
           success: false,
           data: 'Delete-Post message failed',
         };
       }
 
-      this.logger.debug(LogGroup.API, `Post deletion message sent with ID: ${messageId}`);
+      this.logger.debug(
+        LogGroup.API,
+        `Post deletion message sent with ID: ${messageId}`
+      );
 
       // Try to get the result of the message
       try {
         const resultData = await this.getMessageResult(messageId);
-        const response = await this.parseMessageResponse(resultData, options.wallet);
-        this.logger.info(LogGroup.API, `Post ${options.id} deleted successfully`);
+        const response = await this.parseMessageResponse(
+          resultData,
+          options.wallet
+        );
+        this.logger.info(
+          LogGroup.API,
+          `Post ${options.id} deleted successfully`
+        );
         return response;
       } catch (resultError) {
-        this.logger.warn(LogGroup.API, `Could not retrieve post deletion result, but message was sent: ${messageId}`);
+        this.logger.warn(
+          LogGroup.API,
+          `Could not retrieve post deletion result, but message was sent: ${messageId}`
+        );
         return {
           success: true,
           data: `Post ${options.id} deleted successfully. Message ID: ${messageId}`,
         };
       }
     } catch (error) {
-      this.logger.error(LogGroup.API, `Failed to delete post ${options.id}`, error);
+      this.logger.error(
+        LogGroup.API,
+        `Failed to delete post ${options.id}`,
+        error
+      );
       return {
         success: false,
         data: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -387,9 +488,15 @@ export class InkwellBlogSDK implements BlogSDK {
     options: RoleManagementOptions
   ): Promise<ApiResponse<RoleUpdateResult[] | string>> {
     try {
-      this.logger.info(LogGroup.AUTH, `Adding editors: ${options.accounts.join(', ')}`);
+      this.logger.info(
+        LogGroup.AUTH,
+        `Adding editors: ${options.accounts.join(', ')}`
+      );
       validateRoleManagementOptions(options);
-      this.logger.debug(LogGroup.VALIDATION, 'Role management options validation passed');
+      this.logger.debug(
+        LogGroup.VALIDATION,
+        'Role management options validation passed'
+      );
 
       const messageId = await this.aoconnect.message({
         process: this.processId,
@@ -399,30 +506,49 @@ export class InkwellBlogSDK implements BlogSDK {
       });
 
       if (!messageId) {
-        this.logger.error(LogGroup.AUTH, 'Add-Editors message failed - no message ID returned');
+        this.logger.error(
+          LogGroup.AUTH,
+          'Add-Editors message failed - no message ID returned'
+        );
         return {
           success: false,
           data: 'Add-Editors message failed',
         };
       }
 
-      this.logger.debug(LogGroup.AUTH, `Add editors message sent with ID: ${messageId}`);
+      this.logger.debug(
+        LogGroup.AUTH,
+        `Add editors message sent with ID: ${messageId}`
+      );
 
       // Try to get the result of the message
       try {
         const resultData = await this.getMessageResult(messageId);
-        const response = await this.parseMessageResponse(resultData, options.wallet);
-        this.logger.info(LogGroup.AUTH, `Successfully added ${options.accounts.length} editors`);
+        const response = await this.parseMessageResponse(
+          resultData,
+          options.wallet
+        );
+        this.logger.info(
+          LogGroup.AUTH,
+          `Successfully added ${options.accounts.length} editors`
+        );
         return response;
       } catch (resultError) {
-        this.logger.warn(LogGroup.AUTH, `Could not retrieve add editors result, but message was sent: ${messageId}`);
+        this.logger.warn(
+          LogGroup.AUTH,
+          `Could not retrieve add editors result, but message was sent: ${messageId}`
+        );
         return {
           success: true,
           data: `Editors ${options.accounts.join(', ')} added successfully. Message ID: ${messageId}`,
         };
       }
     } catch (error) {
-      this.logger.error(LogGroup.AUTH, `Failed to add editors: ${options.accounts.join(', ')}`, error);
+      this.logger.error(
+        LogGroup.AUTH,
+        `Failed to add editors: ${options.accounts.join(', ')}`,
+        error
+      );
       return {
         success: false,
         data: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -437,9 +563,15 @@ export class InkwellBlogSDK implements BlogSDK {
     options: RoleManagementOptions
   ): Promise<ApiResponse<RoleUpdateResult[] | string>> {
     try {
-      this.logger.info(LogGroup.AUTH, `Removing editors: ${options.accounts.join(', ')}`);
+      this.logger.info(
+        LogGroup.AUTH,
+        `Removing editors: ${options.accounts.join(', ')}`
+      );
       validateRoleManagementOptions(options);
-      this.logger.debug(LogGroup.VALIDATION, 'Role management options validation passed');
+      this.logger.debug(
+        LogGroup.VALIDATION,
+        'Role management options validation passed'
+      );
 
       const messageId = await this.aoconnect.message({
         process: this.processId,
@@ -449,30 +581,49 @@ export class InkwellBlogSDK implements BlogSDK {
       });
 
       if (!messageId) {
-        this.logger.error(LogGroup.AUTH, 'Remove-Editors message failed - no message ID returned');
+        this.logger.error(
+          LogGroup.AUTH,
+          'Remove-Editors message failed - no message ID returned'
+        );
         return {
           success: false,
           data: 'Remove-Editors message failed',
         };
       }
 
-      this.logger.debug(LogGroup.AUTH, `Remove editors message sent with ID: ${messageId}`);
+      this.logger.debug(
+        LogGroup.AUTH,
+        `Remove editors message sent with ID: ${messageId}`
+      );
 
       // Try to get the result of the message
       try {
         const resultData = await this.getMessageResult(messageId);
-        const response = await this.parseMessageResponse(resultData, options.wallet);
-        this.logger.info(LogGroup.AUTH, `Successfully removed ${options.accounts.length} editors`);
+        const response = await this.parseMessageResponse(
+          resultData,
+          options.wallet
+        );
+        this.logger.info(
+          LogGroup.AUTH,
+          `Successfully removed ${options.accounts.length} editors`
+        );
         return response;
       } catch (resultError) {
-        this.logger.warn(LogGroup.AUTH, `Could not retrieve remove editors result, but message was sent: ${messageId}`);
+        this.logger.warn(
+          LogGroup.AUTH,
+          `Could not retrieve remove editors result, but message was sent: ${messageId}`
+        );
         return {
           success: true,
           data: `Editors ${options.accounts.join(', ')} removed successfully. Message ID: ${messageId}`,
         };
       }
     } catch (error) {
-      this.logger.error(LogGroup.AUTH, `Failed to remove editors: ${options.accounts.join(', ')}`, error);
+      this.logger.error(
+        LogGroup.AUTH,
+        `Failed to remove editors: ${options.accounts.join(', ')}`,
+        error
+      );
       return {
         success: false,
         data: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -487,9 +638,15 @@ export class InkwellBlogSDK implements BlogSDK {
     options: RoleManagementOptions
   ): Promise<ApiResponse<RoleUpdateResult[] | string>> {
     try {
-      this.logger.info(LogGroup.AUTH, `Adding admins: ${options.accounts.join(', ')}`);
+      this.logger.info(
+        LogGroup.AUTH,
+        `Adding admins: ${options.accounts.join(', ')}`
+      );
       validateRoleManagementOptions(options);
-      this.logger.debug(LogGroup.VALIDATION, 'Role management options validation passed');
+      this.logger.debug(
+        LogGroup.VALIDATION,
+        'Role management options validation passed'
+      );
 
       const messageId = await this.aoconnect.message({
         process: this.processId,
@@ -499,30 +656,49 @@ export class InkwellBlogSDK implements BlogSDK {
       });
 
       if (!messageId) {
-        this.logger.error(LogGroup.AUTH, 'Add-Admins message failed - no message ID returned');
+        this.logger.error(
+          LogGroup.AUTH,
+          'Add-Admins message failed - no message ID returned'
+        );
         return {
           success: false,
           data: 'Add-Admins message failed',
         };
       }
 
-      this.logger.debug(LogGroup.AUTH, `Add admins message sent with ID: ${messageId}`);
+      this.logger.debug(
+        LogGroup.AUTH,
+        `Add admins message sent with ID: ${messageId}`
+      );
 
       // Try to get the result of the message
       try {
         const resultData = await this.getMessageResult(messageId);
-        const response = await this.parseMessageResponse(resultData, options.wallet);
-        this.logger.info(LogGroup.AUTH, `Successfully added ${options.accounts.length} admins`);
+        const response = await this.parseMessageResponse(
+          resultData,
+          options.wallet
+        );
+        this.logger.info(
+          LogGroup.AUTH,
+          `Successfully added ${options.accounts.length} admins`
+        );
         return response;
       } catch (resultError) {
-        this.logger.warn(LogGroup.AUTH, `Could not retrieve add admins result, but message was sent: ${messageId}`);
+        this.logger.warn(
+          LogGroup.AUTH,
+          `Could not retrieve add admins result, but message was sent: ${messageId}`
+        );
         return {
           success: true,
           data: `Admins ${options.accounts.join(', ')} added successfully. Message ID: ${messageId}`,
         };
       }
     } catch (error) {
-      this.logger.error(LogGroup.AUTH, `Failed to add admins: ${options.accounts.join(', ')}`, error);
+      this.logger.error(
+        LogGroup.AUTH,
+        `Failed to add admins: ${options.accounts.join(', ')}`,
+        error
+      );
       return {
         success: false,
         data: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -537,9 +713,15 @@ export class InkwellBlogSDK implements BlogSDK {
     options: RoleManagementOptions
   ): Promise<ApiResponse<RoleUpdateResult[] | string>> {
     try {
-      this.logger.info(LogGroup.AUTH, `Removing admins: ${options.accounts.join(', ')}`);
+      this.logger.info(
+        LogGroup.AUTH,
+        `Removing admins: ${options.accounts.join(', ')}`
+      );
       validateRoleManagementOptions(options);
-      this.logger.debug(LogGroup.VALIDATION, 'Role management options validation passed');
+      this.logger.debug(
+        LogGroup.VALIDATION,
+        'Role management options validation passed'
+      );
 
       const messageId = await this.aoconnect.message({
         process: this.processId,
@@ -549,30 +731,49 @@ export class InkwellBlogSDK implements BlogSDK {
       });
 
       if (!messageId) {
-        this.logger.error(LogGroup.AUTH, 'Remove-Admins message failed - no message ID returned');
+        this.logger.error(
+          LogGroup.AUTH,
+          'Remove-Admins message failed - no message ID returned'
+        );
         return {
           success: false,
           data: 'Remove-Admins message failed',
         };
       }
 
-      this.logger.debug(LogGroup.AUTH, `Remove admins message sent with ID: ${messageId}`);
+      this.logger.debug(
+        LogGroup.AUTH,
+        `Remove admins message sent with ID: ${messageId}`
+      );
 
       // Try to get the result of the message
       try {
         const resultData = await this.getMessageResult(messageId);
-        const response = await this.parseMessageResponse(resultData, options.wallet);
-        this.logger.info(LogGroup.AUTH, `Successfully removed ${options.accounts.length} admins`);
+        const response = await this.parseMessageResponse(
+          resultData,
+          options.wallet
+        );
+        this.logger.info(
+          LogGroup.AUTH,
+          `Successfully removed ${options.accounts.length} admins`
+        );
         return response;
       } catch (resultError) {
-        this.logger.warn(LogGroup.AUTH, `Could not retrieve remove admins result, but message was sent: ${messageId}`);
+        this.logger.warn(
+          LogGroup.AUTH,
+          `Could not retrieve remove admins result, but message was sent: ${messageId}`
+        );
         return {
           success: true,
           data: `Admins ${options.accounts.join(', ')} removed successfully. Message ID: ${messageId}`,
         };
       }
     } catch (error) {
-      this.logger.error(LogGroup.AUTH, `Failed to remove admins: ${options.accounts.join(', ')}`, error);
+      this.logger.error(
+        LogGroup.AUTH,
+        `Failed to remove admins: ${options.accounts.join(', ')}`,
+        error
+      );
       return {
         success: false,
         data: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -593,7 +794,10 @@ export class InkwellBlogSDK implements BlogSDK {
 
       const response = await this.parseMessageResponse(result);
       if (response.success && Array.isArray(response.data)) {
-        this.logger.info(LogGroup.AUTH, `Retrieved ${response.data.length} editors`);
+        this.logger.info(
+          LogGroup.AUTH,
+          `Retrieved ${response.data.length} editors`
+        );
       }
       return response;
     } catch (error) {
@@ -618,7 +822,10 @@ export class InkwellBlogSDK implements BlogSDK {
 
       const response = await this.parseMessageResponse(result);
       if (response.success && Array.isArray(response.data)) {
-        this.logger.info(LogGroup.AUTH, `Retrieved ${response.data.length} admins`);
+        this.logger.info(
+          LogGroup.AUTH,
+          `Retrieved ${response.data.length} admins`
+        );
       }
       return response;
     } catch (error) {
@@ -638,7 +845,10 @@ export class InkwellBlogSDK implements BlogSDK {
     wallet?: any;
   }): Promise<ApiResponse<BlogDetails | string>> {
     try {
-      this.logger.info(LogGroup.API, `Updating blog details: ${JSON.stringify(options.data)}`);
+      this.logger.info(
+        LogGroup.API,
+        `Updating blog details: ${JSON.stringify(options.data)}`
+      );
       validateBlogDetailsData(options.data);
       this.logger.debug(LogGroup.VALIDATION, 'Blog details validation passed');
 
@@ -650,23 +860,35 @@ export class InkwellBlogSDK implements BlogSDK {
       });
 
       if (!messageId) {
-        this.logger.error(LogGroup.API, 'Set-Blog-Details message failed - no message ID returned');
+        this.logger.error(
+          LogGroup.API,
+          'Set-Blog-Details message failed - no message ID returned'
+        );
         return {
           success: false,
           data: 'Set-Blog-Details message failed',
         };
       }
 
-      this.logger.debug(LogGroup.API, `Blog details update message sent with ID: ${messageId}`);
+      this.logger.debug(
+        LogGroup.API,
+        `Blog details update message sent with ID: ${messageId}`
+      );
 
       // Try to get the result of the message
       try {
         const resultData = await this.getMessageResult(messageId);
-        const response = await this.parseDryrunResponse(resultData, options.wallet);
+        const response = await this.parseDryrunResponse(
+          resultData,
+          options.wallet
+        );
         this.logger.info(LogGroup.API, 'Blog details updated successfully');
         return response;
       } catch (resultError) {
-        this.logger.warn(LogGroup.API, `Could not retrieve blog details update result, but message was sent: ${messageId}`);
+        this.logger.warn(
+          LogGroup.API,
+          `Could not retrieve blog details update result, but message was sent: ${messageId}`
+        );
         return {
           success: true,
           data: `Blog details updated successfully. Message ID: ${messageId}`,
@@ -690,8 +912,11 @@ export class InkwellBlogSDK implements BlogSDK {
     optionsWallet?: string
   ): Promise<ApiResponse<any>> {
     try {
-      this.logger.debug(LogGroup.API, `Parsing response with ${result?.Messages?.length || 0} messages`);
-      
+      this.logger.debug(
+        LogGroup.API,
+        `Parsing response with ${result?.Messages?.length || 0} messages`
+      );
+
       if (result && result.Messages && result.Messages.length > 0) {
         const wallet =
           optionsWallet ||
@@ -699,22 +924,40 @@ export class InkwellBlogSDK implements BlogSDK {
         let message;
         if (!wallet) {
           message = result.Messages[0];
-          this.logger.debug(LogGroup.API, 'Using first message (no wallet specified)');
+          this.logger.debug(
+            LogGroup.API,
+            'Using first message (no wallet specified)'
+          );
         } else {
-          message = result.Messages.find((m: any) => m.Tags.Target === wallet);
-          this.logger.debug(LogGroup.API, `Found message for wallet: ${wallet}`);
+          message = result.Messages.find((m: any) => m.Target === wallet);
+          this.logger.debug(
+            LogGroup.API,
+            `Found message for wallet: ${wallet}`
+          );
+          this.logger.debug(LogGroup.API, `Message found: ${message}`);
         }
-        
+
         if (message?.Data) {
-          this.logger.debug(LogGroup.API, 'Parsing message data as JSON: ', message.Data);
+          this.logger.debug(
+            LogGroup.API,
+            'Parsing message data as JSON: ',
+            message.Data
+          );
           const parsed = JSON.parse(message.Data);
-          
+
           if (recursiveParse && typeof parsed.data === 'string') {
-            this.logger.debug(LogGroup.API, 'Performing recursive JSON parse on data field: ', parsed.data);
+            this.logger.debug(
+              LogGroup.API,
+              'Performing recursive JSON parse on data field: ',
+              parsed.data
+            );
             parsed.data = JSON.parse(parsed.data);
           }
-          
-          this.logger.debug(LogGroup.API, `Response parsed successfully: ${parsed.success ? 'success' : 'failure'}`);
+
+          this.logger.debug(
+            LogGroup.API,
+            `Response parsed successfully: ${parsed.success ? 'success' : 'failure'}`
+          );
           return {
             success: parsed.success,
             data: parsed.data || parsed,
@@ -722,7 +965,10 @@ export class InkwellBlogSDK implements BlogSDK {
         }
       }
 
-      this.logger.warn(LogGroup.API, 'Invalid response format from process - no valid messages found');
+      this.logger.warn(
+        LogGroup.API,
+        'Invalid response format from process - no valid messages found'
+      );
       return {
         success: false,
         data: 'Invalid response format from process',
@@ -766,10 +1012,13 @@ export class InkwellBlogSDK implements BlogSDK {
   ): Promise<ApiResponse<BlogInfo>> {
     try {
       this.logger.debug(LogGroup.API, 'Parsing blog info response');
-      
+
       if (result && result.Messages && result.Messages.length > 0) {
         const message = result.Messages[0];
-        this.logger.debug(LogGroup.API, 'Extracting blog info from message tags');
+        this.logger.debug(
+          LogGroup.API,
+          'Extracting blog info from message tags'
+        );
 
         // Info handler returns data in message tags and Data field
         const info: BlogInfo = {
@@ -788,10 +1037,16 @@ export class InkwellBlogSDK implements BlogSDK {
         // Also try to parse the Data field for additional details
         if (message.Data) {
           try {
-            this.logger.debug(LogGroup.API, 'Parsing additional blog info from Data field');
+            this.logger.debug(
+              LogGroup.API,
+              'Parsing additional blog info from Data field'
+            );
             const parsedData = JSON.parse(message.Data);
             if (parsedData.success && parsedData.data) {
-              this.logger.debug(LogGroup.API, 'Merging parsed data with tag-based info');
+              this.logger.debug(
+                LogGroup.API,
+                'Merging parsed data with tag-based info'
+              );
               info.details = {
                 title: parsedData.data.title || info.details.title,
                 description:
@@ -800,24 +1055,38 @@ export class InkwellBlogSDK implements BlogSDK {
               };
             }
           } catch (parseError) {
-            this.logger.warn(LogGroup.API, 'Failed to parse Data field, using tag-based info only', parseError);
+            this.logger.warn(
+              LogGroup.API,
+              'Failed to parse Data field, using tag-based info only',
+              parseError
+            );
           }
         }
 
-        this.logger.debug(LogGroup.API, `Blog info parsed successfully: ${info.name}`);
+        this.logger.debug(
+          LogGroup.API,
+          `Blog info parsed successfully: ${info.name}`
+        );
         return {
           success: true,
           data: info,
         };
       }
 
-      this.logger.warn(LogGroup.API, 'Invalid blog info response format - no messages found');
+      this.logger.warn(
+        LogGroup.API,
+        'Invalid blog info response format - no messages found'
+      );
       return {
         success: false,
         data: 'Invalid response format from process',
       };
     } catch (error) {
-      this.logger.error(LogGroup.API, 'Failed to parse blog info response', error);
+      this.logger.error(
+        LogGroup.API,
+        'Failed to parse blog info response',
+        error
+      );
       return {
         success: false,
         data:
