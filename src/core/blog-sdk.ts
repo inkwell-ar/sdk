@@ -990,7 +990,7 @@ export class InkwellBlogSDK implements BlogSDK {
     result: any,
     optionsWallet?: string
   ): Promise<ApiResponse<any>> {
-    return await this.parseResponse(result, false, optionsWallet);
+    return await this.parseResponse(result, false);
   }
 
   /**
