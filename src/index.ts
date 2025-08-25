@@ -30,6 +30,7 @@ export type {
   SyncResponse,
 } from './types';
 export { ValidationError } from './utils/validation';
+export { Logger, LogLevel, LogGroup } from './utils/logger';
 
 // Default export for convenience
 // export default InkwellBlogSDK;

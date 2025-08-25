@@ -1,4 +1,5 @@
 // Core types for the Blog CRUD SDK
+import { LogLevel } from '../utils/logger';
 
 export interface BlogPost {
   id: number;
@@ -84,7 +85,11 @@ export interface BlogSDKConfig {
   processId: string;
   wallet?: any; // Arweave wallet instance
   aoconnect?: any; // aoconnect instance
+  logLevel?: LogLevel; // Logger configuration
 }
+
+// Re-export logger types
+export { LogLevel, LogGroup } from '../utils/logger';
 
 export interface DeployConfig {
   name?: string;

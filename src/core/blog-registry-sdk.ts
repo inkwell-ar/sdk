@@ -1,6 +1,7 @@
 import { connect } from '@permaweb/aoconnect';
 import { BLOG_REGISTRY_PROCESS_ID } from '../config/registry';
-import { Role } from '../types';
+import { Role, LogLevel } from '../types';
+import { Logger, LogGroup } from '../utils/logger';
 
 export interface BlogPermission {
   blog_id: string;
@@ -36,19 +37,21 @@ export interface SyncResponse {
 export class BlogRegistrySDK {
   private aoconnect: any;
   private registryProcessId: string;
+  private logger: Logger;
 
-  constructor(ao?: any, registryProcessId?: string) {
+  constructor(ao?: any, registryProcessId?: string, logLevel: LogLevel = LogLevel.WARN) {
     this.aoconnect = ao || connect({ MODE: 'legacy' });
     this.registryProcessId = registryProcessId || BLOG_REGISTRY_PROCESS_ID;
+    this.logger = new Logger({ level: logLevel });
 
     if (this.registryProcessId === 'YOUR_REGISTRY_PROCESS_ID_HERE') {
+      this.logger.error(LogGroup.REGISTRY, 'Registry process ID not configured');
       throw new Error(
         'Registry process ID not configured. Please run the deployment script first: npm run deploy:registry'
       );
     }
 
-    // Debug: Log the registry process ID
-    console.log('🔧 Registry Process ID:', this.registryProcessId);
+    this.logger.info(LogGroup.REGISTRY, `Initialized BlogRegistrySDK with process ID: ${this.registryProcessId}`);
   }
 
   /**
@@ -61,6 +64,8 @@ export class BlogRegistrySDK {
    * Get all blogs a wallet has permissions for
    */
   async getWalletBlogs(wallet: string): Promise<BlogPermission[]> {
+    this.logger.debug(LogGroup.REGISTRY, `Getting blogs for wallet: ${wallet}`);
+    
     const result = await this.aoconnect.dryrun({
       process: this.registryProcessId,
       data: '',
@@ -72,9 +77,11 @@ export class BlogRegistrySDK {
 
     const response = JSON.parse(result.Messages[0].Data);
     if (!response.success) {
+      this.logger.error(LogGroup.REGISTRY, `Failed to get wallet blogs: ${response.data}`);
       throw new Error(response.data);
     }
 
+    this.logger.debug(LogGroup.REGISTRY, `Found ${response.data.length} blogs for wallet`);
     return response.data;
   }
 
@@ -107,6 +114,8 @@ export class BlogRegistrySDK {
     blogId: string,
     role: string
   ): Promise<boolean> {
+    this.logger.debug(LogGroup.AUTH, `Checking if wallet ${wallet} has role ${role} for blog ${blogId}`);
+    
     const result = await this.aoconnect.dryrun({
       process: this.registryProcessId,
       data: '',
@@ -120,9 +129,11 @@ export class BlogRegistrySDK {
 
     const response = JSON.parse(result.Messages[0].Data);
     if (!response.success) {
+      this.logger.error(LogGroup.AUTH, `Role check failed: ${response.data.error}`);
       throw new Error(response.data.error);
     }
 
+    this.logger.debug(LogGroup.AUTH, `Role check result: ${response.data.has_role}`);
     return response.data.has_role;
   }
 
