@@ -1,4 +1,4 @@
-import { BlogRegistrySDK } from '../index';
+import { InkwellRegistrySDK } from '../index';
 import { Role } from '../types';
 
 // Basic registry usage example - demonstrates read-only functions
@@ -7,7 +7,7 @@ async function basicRegistryUsage() {
     console.log('🔍 Basic Registry Usage Example\n');
 
     // Initialize the registry SDK (uses hardcoded registry process ID)
-    const registry = new BlogRegistrySDK();
+    const registry = new InkwellRegistrySDK();
 
     // Example wallet address to check
     // const walletAddress = 'example-wallet-address-here';
@@ -146,7 +146,7 @@ async function checkMultipleWallets() {
   try {
     console.log('👥 Checking Multiple Wallets Example\n');
 
-    const registry = new BlogRegistrySDK();
+    const registry = new InkwellRegistrySDK();
     const wallets = [
       'wallet-1-address',
       'wallet-2-address',
@@ -199,7 +199,7 @@ async function permissionCheckExample(walletAddress: string, blogId: string) {
   try {
     console.log('🔐 Permission Check Example\n');
 
-    const registry = new BlogRegistrySDK();
+    const registry = new InkwellRegistrySDK();
 
     console.log(`Checking permissions for wallet: ${walletAddress}`);
     console.log(`On blog: ${blogId}\n`);

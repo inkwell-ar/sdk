@@ -23,6 +23,7 @@ export type {
   DeployOptions,
   DeployResult,
   // Blog Registry types
+  RegistrySDK,
   RegistrySDKConfig,
   BlogPermission,
   WalletPermission,

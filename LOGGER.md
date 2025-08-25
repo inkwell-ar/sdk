@@ -32,13 +32,11 @@ const sdk = new InkwellBlogSDK({
 
 ### Registry SDK Configuration
 ```typescript
-import { BlogRegistrySDK, LogLevel } from '@inkwell.ar/sdk';
+import { InkwellRegistrySDK, LogLevel } from '@inkwell.ar/sdk';
 
-const registrySDK = new BlogRegistrySDK(
-  undefined, // aoconnect
-  undefined, // registryProcessId  
-  LogLevel.DEBUG // logLevel
-);
+const registrySDK = new InkwellRegistrySDK({
+  logLevel: LogLevel.DEBUG // logLevel
+});
 ```
 
 ### Standalone Logger

@@ -89,9 +89,9 @@ export interface BlogSDKConfig {
 }
 
 export interface RegistrySDKConfig {
-  aoconnect?: any;
-  registryProcessId?: string;
-  logLevel?: LogLevel;
+  registryProcessId?: string; // Registry process ID
+  aoconnect?: any; // aoconnect instance
+  logLevel?: LogLevel; // Logger configuration
 }
 
 // Re-export logger types
@@ -173,6 +173,20 @@ export interface BlogSDK {
     data: UpdateBlogDetailsData;
     wallet?: any; // Optional: will use browser wallet if available
   }): Promise<ApiResponse<BlogDetails | string>>;
+}
+
+export interface RegistrySDK {
+  // Core registry methods
+  getWalletBlogs(wallet: string): Promise<BlogPermission[]>;
+  getBlogWallets(blogId: string): Promise<WalletPermission[]>;
+  checkWalletRole(wallet: string, blogId: string, role: string): Promise<boolean>;
+  getRegistryStats(): Promise<RegistryStats>;
+
+  // Convenience methods
+  getAdminBlogs(wallet: string): Promise<BlogPermission[]>;
+  getEditableBlogs(wallet: string): Promise<BlogPermission[]>;
+  canAdminBlog(wallet: string, blogId: string): Promise<boolean>;
+  canEditBlog(wallet: string, blogId: string): Promise<boolean>;
 }
 
 // Valid roles

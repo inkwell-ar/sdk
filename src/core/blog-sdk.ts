@@ -1,6 +1,5 @@
 import { connect, createDataItemSigner } from '@permaweb/aoconnect';
 import { Logger, LogLevel, LogGroup } from '../utils/logger';
-import { BLOG_REGISTRY_PROCESS_ID } from '../config/registry';
 import { deployBlogInBrowser } from './browser-deploy';
 import {
   BlogSDK,
@@ -9,8 +8,6 @@ import {
   BlogPost,
   BlogDetails,
   BlogInfo,
-  CreatePostData,
-  UpdatePostData,
   UpdateBlogDetailsData,
   GetPostsOptions,
   GetPostOptions,
