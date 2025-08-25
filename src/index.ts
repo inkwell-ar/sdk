@@ -22,6 +22,7 @@ export type {
   RoleUpdateResult,
   DeployOptions,
   DeployResult,
+  ParseResponseOptions,
   // Blog Registry types
   RegistrySDK,
   RegistrySDKConfig,

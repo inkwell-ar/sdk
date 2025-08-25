@@ -97,6 +97,14 @@ export interface RegistrySDKConfig {
 // Re-export logger types
 export { LogLevel, LogGroup } from '../utils/logger';
 
+// Parse response options
+export interface ParseResponseOptions {
+  result: any;
+  isDryrun?: boolean;
+  recursiveParse?: boolean;
+  optionsWallet?: string;
+}
+
 export interface DeployConfig {
   name?: string;
   wallet?: string | any;

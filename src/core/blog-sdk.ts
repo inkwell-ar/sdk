@@ -18,6 +18,7 @@ import {
   RoleUpdateResult,
   DeployOptions,
   DeployResult,
+  ParseResponseOptions,
 } from '../types';
 import {
   validateCreatePostData,
@@ -174,7 +175,8 @@ export class InkwellBlogSDK implements BlogSDK {
         tags,
       });
 
-      const response = await this.parseDryrunResponse(result);
+      this.logger.debug(LogGroup.API, `Result: ${JSON.stringify(result)}`);
+      const response = await this.parseDryrunResponse(result, true);
       if (response.success && Array.isArray(response.data)) {
         this.logger.info(
           LogGroup.API,
@@ -246,7 +248,7 @@ export class InkwellBlogSDK implements BlogSDK {
         ],
       });
 
-      const response = await this.parseMessageResponse(result);
+      const response = await this.parseDryrunResponse(result, true);
       if (response.success && Array.isArray(response.data)) {
         this.logger.info(
           LogGroup.AUTH,
@@ -792,7 +794,7 @@ export class InkwellBlogSDK implements BlogSDK {
         tags: [{ name: 'Action', value: 'Get-Editors' }],
       });
 
-      const response = await this.parseMessageResponse(result);
+      const response = await this.parseDryrunResponse(result, true);
       if (response.success && Array.isArray(response.data)) {
         this.logger.info(
           LogGroup.AUTH,
@@ -820,7 +822,7 @@ export class InkwellBlogSDK implements BlogSDK {
         tags: [{ name: 'Action', value: 'Get-Admins' }],
       });
 
-      const response = await this.parseMessageResponse(result);
+      const response = await this.parseDryrunResponse(result, true);
       if (response.success && Array.isArray(response.data)) {
         this.logger.info(
           LogGroup.AUTH,
@@ -878,7 +880,7 @@ export class InkwellBlogSDK implements BlogSDK {
       // Try to get the result of the message
       try {
         const resultData = await this.getMessageResult(messageId);
-        const response = await this.parseDryrunResponse(
+        const response = await this.parseMessageResponse(
           resultData,
           options.wallet
         );
@@ -907,43 +909,72 @@ export class InkwellBlogSDK implements BlogSDK {
    * Parse the response
    */
   private async parseResponse(
-    result: any,
-    recursiveParse: boolean = false,
-    optionsWallet?: string
+    options: ParseResponseOptions
   ): Promise<ApiResponse<any>> {
+    const {
+      result,
+      isDryrun = false,
+      recursiveParse = false,
+      optionsWallet,
+    } = options;
+
     try {
       this.logger.debug(
         LogGroup.API,
-        `Parsing response with ${result?.Messages?.length || 0} messages`
+        `Parsing ${isDryrun ? 'dryrun' : 'message'} response with ${result?.Messages?.length || 0} messages`
       );
 
       if (result && result.Messages && result.Messages.length > 0) {
-        const wallet =
-          optionsWallet ||
-          (await (globalThis as any).arweaveWallet.getActiveAddress());
         let message;
-        if (!wallet) {
+
+        if (isDryrun) {
+          // For dryrun operations, always use the first message
           message = result.Messages[0];
           this.logger.debug(
             LogGroup.API,
-            'Using first message (no wallet specified)'
+            'Using first message for dryrun operation'
           );
         } else {
-          message = result.Messages.find((m: any) => m.Target === wallet);
-          this.logger.debug(
-            LogGroup.API,
-            `Found message for wallet: ${wallet}`
-          );
-          this.logger.debug(LogGroup.API, `Message found: ${message}`);
+          // For message operations, try to find the message targeted to the wallet
+          const wallet =
+            optionsWallet ||
+            (await (globalThis as any).arweaveWallet.getActiveAddress());
+
+          if (!wallet) {
+            message = result.Messages[0];
+            this.logger.debug(
+              LogGroup.API,
+              'Using first message (no wallet specified)'
+            );
+          } else {
+            message = result.Messages.find(
+              (m: any) => m.Tags?.Target === wallet || m.Target === wallet
+            );
+            if (!message) {
+              // Fallback to first message if no targeted message found
+              message = result.Messages[0];
+              this.logger.debug(
+                LogGroup.API,
+                `No message found for wallet ${wallet}, using first message`
+              );
+            } else {
+              this.logger.debug(
+                LogGroup.API,
+                `Found targeted message for wallet: ${wallet}`
+              );
+            }
+          }
         }
 
-        if (message?.Data) {
+        const data = message?.Data;
+
+        if (data) {
           this.logger.debug(
             LogGroup.API,
             'Parsing message data as JSON: ',
-            message.Data
+            data
           );
-          const parsed = JSON.parse(message.Data);
+          const parsed = JSON.parse(data);
 
           if (recursiveParse && typeof parsed.data === 'string') {
             this.logger.debug(
@@ -988,9 +1019,13 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   private async parseDryrunResponse(
     result: any,
-    optionsWallet?: string
+    recursiveParse: boolean = false
   ): Promise<ApiResponse<any>> {
-    return await this.parseResponse(result, false);
+    return await this.parseResponse({
+      result,
+      isDryrun: true,
+      recursiveParse,
+    });
   }
 
   /**
@@ -998,18 +1033,21 @@ export class InkwellBlogSDK implements BlogSDK {
    */
   private async parseMessageResponse(
     result: any,
-    optionsWallet?: string
+    optionsWallet?: string,
+    recursiveParse: boolean = true
   ): Promise<ApiResponse<any>> {
-    return await this.parseResponse(result, true, optionsWallet);
+    return await this.parseResponse({
+      result,
+      isDryrun: false,
+      recursiveParse,
+      optionsWallet,
+    });
   }
 
   /**
    * Parse the Info response from the AO process
    */
-  private async parseInfoResponse(
-    result: any,
-    optionsWallet?: string
-  ): Promise<ApiResponse<BlogInfo>> {
+  private async parseInfoResponse(result: any): Promise<ApiResponse<BlogInfo>> {
     try {
       this.logger.debug(LogGroup.API, 'Parsing blog info response');
 
