@@ -1,7 +1,7 @@
 // Main entry point for the Inkwell Blog SDK
 
 export { InkwellBlogSDK } from './core/blog-sdk';
-export { BlogRegistrySDK } from './core/blog-registry-sdk';
+export { InkwellRegistrySDK } from './core/registry-sdk';
 export { deployBlogInBrowser } from './core/browser-deploy';
 export type {
   BlogSDK,
@@ -23,6 +23,7 @@ export type {
   DeployOptions,
   DeployResult,
   // Blog Registry types
+  RegistrySDKConfig,
   BlogPermission,
   WalletPermission,
   RegistryStats,

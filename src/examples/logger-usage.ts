@@ -1,4 +1,10 @@
-import { InkwellBlogSDK, BlogRegistrySDK, LogLevel, LogGroup, Logger } from '../index';
+import {
+  InkwellBlogSDK,
+  InkwellRegistrySDK,
+  LogLevel,
+  LogGroup,
+  Logger,
+} from '../index';
 
 // Example 1: Using logger with Blog SDK
 const blogSdk = new InkwellBlogSDK({
@@ -6,19 +12,19 @@ const blogSdk = new InkwellBlogSDK({
   logLevel: LogLevel.DEBUG, // Will log everything
 });
 
-// Example 2: Using logger with Registry SDK (silent)
-const registrySdk = new BlogRegistrySDK(
-  undefined, // aoconnect
-  undefined, // registryProcessId
-  LogLevel.SILENT // No logging
-);
+// Example 2: Using logger with Registry SDK(silent)
+const registrySdk = new InkwellRegistrySDK({
+  aoconnect: undefined, // aoconnect
+  registryProcessId: undefined, // registryProcessId
+  logLevel: LogLevel.SILENT, // No logging
+});
 
 // Example 3: Using logger with Registry SDK (info level)
-const registrySdkInfo = new BlogRegistrySDK(
-  undefined, // aoconnect
-  undefined, // registryProcessId
-  LogLevel.INFO // Will log info, warn, and error
-);
+const registrySdkInfo = new InkwellRegistrySDK({
+  aoconnect: undefined, // aoconnect
+  registryProcessId: undefined, // registryProcessId
+  logLevel: LogLevel.INFO, // Will log info, warn, and error
+});
 
 // Example 4: Standalone logger usage
 const logger = new Logger({ level: LogLevel.WARN });
@@ -37,7 +43,7 @@ async function exampleUsage() {
   try {
     // This will log debug messages about the API calls
     const info = await blogSdk.getInfo();
-    
+
     if (info.success) {
       console.log('Blog info:', info.data);
     }

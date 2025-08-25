@@ -1,4 +1,4 @@
-import { InkwellBlogSDK, BlogRegistrySDK } from '../index';
+import { InkwellBlogSDK, InkwellRegistrySDK } from '../index';
 
 // Basic usage example
 async function basicUsage() {
@@ -16,7 +16,7 @@ async function basicUsage() {
       processId: deployResult.processId
     });
     
-    const registry = new BlogRegistrySDK();
+    const registry = new InkwellRegistrySDK();
     
     // Get blog info
     const info = await blog.getInfo();

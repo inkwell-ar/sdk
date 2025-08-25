@@ -88,6 +88,12 @@ export interface BlogSDKConfig {
   logLevel?: LogLevel; // Logger configuration
 }
 
+export interface RegistrySDKConfig {
+  aoconnect?: any;
+  registryProcessId?: string;
+  logLevel?: LogLevel;
+}
+
 // Re-export logger types
 export { LogLevel, LogGroup } from '../utils/logger';
 

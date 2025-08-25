@@ -1,4 +1,4 @@
-import { InkwellBlogSDK, BlogRegistrySDK } from '../index';
+import { InkwellBlogSDK, InkwellRegistrySDK } from '../index';
 
 /**
  * Example of deploying a blog using aoconnect
@@ -26,7 +26,7 @@ export async function browserDeploymentExample() {
     });
 
     // Initialize the registry SDK
-    const registry = new BlogRegistrySDK();
+    const registry = new InkwellRegistrySDK();
 
     // Get blog info
     console.log('📖 Getting blog info...');
@@ -67,7 +67,7 @@ export async function existingBlogExample(processId: string) {
     });
 
     // Initialize the registry SDK
-    const registry = new BlogRegistrySDK();
+    const registry = new InkwellRegistrySDK();
 
     // Get all posts
     console.log('📝 Getting all posts...');
