@@ -106,16 +106,21 @@ export class InkwellBlogSDK implements BlogSDK {
    * Works in both browser and Node.js environments using aoconnect
    */
   static async deploy(options: DeployOptions = {}): Promise<DeployResult> {
-    const logger = new Logger({ level: LogLevel.INFO });
+    const logLevel = options.logLevel || LogLevel.INFO;
+    const logger = new Logger({ level: logLevel });
     try {
       logger.info(
         LogGroup.DEPLOY,
         `Starting blog deployment with name: ${options.name || 'unnamed'}`
       );
-      // Use browser deployment for all environments
+      // Use browser deployment for all environ ments
       const result = await deployBlogInBrowser({
         name: options.name,
         wallet: options.wallet,
+        aoconnect: options.aoconnect,
+        logLevel: logLevel,
+        onBoot: options.onBoot,
+        pollForSpawn: options.pollForSpawn,
       });
       logger.info(
         LogGroup.DEPLOY,

@@ -144,6 +144,9 @@ export interface DeployOptions {
   silent?: boolean;
   blueprints?: string[];
   forceSpawn?: boolean;
+  aoconnect?: any;
+  logLevel?: LogLevel;
+  pollForSpawn?: boolean;
 }
 
 export interface BlogSDK {
@@ -187,7 +190,11 @@ export interface RegistrySDK {
   // Core registry methods
   getWalletBlogs(wallet: string): Promise<BlogPermission[]>;
   getBlogWallets(blogId: string): Promise<WalletPermission[]>;
-  checkWalletRole(wallet: string, blogId: string, role: string): Promise<boolean>;
+  checkWalletRole(
+    wallet: string,
+    blogId: string,
+    role: string
+  ): Promise<boolean>;
   getRegistryStats(): Promise<RegistryStats>;
 
   // Convenience methods
